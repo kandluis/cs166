@@ -1,0 +1,28 @@
+The provided starter code in main.c is a test driver that will automatically
+run your implementation against all the tests in the tests/ directory.
+
+The actual test cases are given in the following format
+
+    number of elements in tree
+    element1 element2 ... elementN
+    
+We will then form a binary search tree of those elements by repeatedly
+calling your insertion function on those elements, in order, starting
+with an empty tree. For example, the test case
+
+    5
+    1 5 3 2 4
+    
+corresponds to this BST:
+
+    1
+     \
+      5
+     /
+    3
+   / \
+  2   4
+    
+Although we've provided some simple test cases with these starter files,
+those tests aren't exhaustive. We strongly recommend adding your own test
+cases to check for conditions we didn't include.
