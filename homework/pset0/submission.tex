@@ -5,6 +5,7 @@
 \usepackage{amsfonts} % For mathematical fonts (like \mathbb{E}!).
 \usepackage{upgreek}  % For upright Greek letters, such as \upvarphi.
 \usepackage{wasysym}  % For additional glyphs (like \smiley!).
+\usepackage{hyperref}
 % For document margins.
 \usepackage[left=.8in, right=.8in, top=1in, bottom=1in]{geometry}
 \usepackage{lastpage} % For a reference to the number of pages.
@@ -298,7 +299,76 @@ To make things easier for the grader, we recommend doing the following when writ
 A note on this problem, and other problems going forward: when measuring runtime in the context of algorithms and data structures, it's important to distinguish between \bi{deterministic} and \bi{randomized} algorithms. There's a lot of research into how to take \emph{randomized} algorithms with a nice \emph{expected} runtime and convert them into \emph{deterministic} algorithms with a nice \emph{worst-case} runtime. Since this problem set is designed as a warm-up, we'll accept either a deterministic algorithm with a worst-case runtime of $O(n + k \log k)$ or a randomized algorithm with an expected runtime of $\bigo{n + k \log k}$, though in the future we'll tend to be a bit stricter about avoiding randomness.
 
 \begin{solution}
-Your solution goes here!
+
+\textbf{Overview}
+The main idea of the algorithm is to first construct a min-heap of the events (ordered by distance) and then use a secondary min-heap to efficiently compute the minimum $k$ distance events. We then return these $k$ events, which will be sorted and will be the closest. We assume that computing the Eucledian distance is $\bigo{1}$. With the use of these two min-heaps, the algorithm will run in $\bigo{n + k \log k}$ time. 
+
+\textbf{Representation}
+We will keep a few data-structures in-memory. A hash-map \textit{events}, two max-heaps, \textit{primary} and \textit{secondary}, and a final array \textit{closestEvents}.
+
+\textbf{Invariants}
+The main invarient of interest occurs when adding elements to \textit{closestEvents}. The invariant we hold is that at all times, if \textit{closestEvents}$[i]$ has been added, then it is the $(i+1)$-th closests event. 
+
+\textbf{Algorithm Details}
+We now describe the algorithm in more detail.
+
+The first-step is to construct the hash-map \textit{events}. This is done by simply iterating over the input array, and for each element, computing the distance to the event (from our current position), and using this distance as the key in the hashmap. The value is the event itself. This can be done in $\bigo{n}$ time, since for each event we do $\bigo{1}$ work. Keys are unique since, as per the problem statement, we can assume each event is a distinct distance from us.
+
+The next-step is to construct \textit{primary}, a min-heap out of the keys in \textit{events} (eg, the distances of events). We use the min-heapify algorithm, which has run-time $\bigo{n}$ (See \href{https://web.stanford.edu/class/archive/cs/cs161/cs161.1168/lecture4.pdf}{notes} from CS161).
+
+Once \textit{primary} is constructed, we proceed with the interesting parts of the algorithm, which consists of filling up \textit{closestEvents}. We begin by peeking at the minimum element in our \textit{primary} min-heap and adding this element to our \textit{secondary} min-heap (including keeping track of the left and right children, but not adding these). We now enter our for-loop.
+
+Starting with $i = 0 \to k - 1$, we first extract the minimum node from \textit{secondary}. Use the stored-information within the node about the left and right children in the \textit{primary} min-heap, and insert thse nodes (if they exist, along with information about their left and right children) into our \textit{secondary} min-heap. Use \textit{events} map to find the event corresponding to the extracted node from our \textit{secondary} min-heap, and place this event in \textit{closetsEvents}$[i]$.
+
+At the end of the loop above, return \textit{closestEvents}.
+
+\textbf{Proof Of Correctness}
+We now prove that at the end of the algorithm, \textit{closestEvents} consists of the $k$ closests evensts in ascending order of distance. 
+
+The simplest way to proof this is by establishing a few properties of our min-heaps, and then proving our extraction loop using induction.
+ 
+We recall that a min-heap has the property that for any node $n$ (other than the root), the $parent(n) \leq n$. In our case, this inequality is strict (since all distances are distinct). From this property, it follows that the root is the minimum element. We can use this property directly to establish our base case.
+
+We wish to establish the following loop-invarients. At the beginning of the loop execution ($i = 1 \cdots k$), we have:
+\begin{enumerate}
+  \item \textit{secondary} contains the $i$-th smallest distance, and this is its root element.
+  \item \textit{closestsEvents}$[0 \cdots i-2]$ contains the top-$(i-1)$ elements, in ascending order. For $i = 1$, the array is empty.
+  \item The top $i-1$ elements and all of their immediate children have been inserted into \textit{secondary} at some point. If $i = 1$, this consists of just the smallest element.
+\end{enumerate}
+
+The base case begins with $i = 1$. Before our first-loop execution, we note that \textit{secondary} contains one-element, the root of the \textit{primary} min-heap. As such, invariant (1) holds, since by the properties of min-heaps, this is the closests distance. Property (2) holds vacuously, since there are no elements in the described set. Similarly, property (3) holds since the smallest element has been inserted (before loop execution).
+
+We now assume that the above invariants hold at the beginning of execution $i$. We wish to show that they still-hold at the beginning of the next execution $i + 1$ (alternatively, that they hold at the end of the $i$-th execution of the loop).
+
+We begin by showing that invariant (2) holds at the beginning of the $(i + 1)$-th execution if all-invariants above held at the beginning of the $i$-th execution.
+
+Consider the $i$-th execution of the for-loop. First, the algorithm extracts the root from \textit{secondary} and adds the corresponding event to \textit{closestEvents}$[i-1]$. By invariant (1), this newly added element is the $i$-th smallest, and it is added at position $i - 1$. Combined with invariant (2), this means that at the beginning of the $(i+1)$-th execution, \textit{closetsEvents}$[0 \cdots i-1]$ contains the top-$i$ elements, in sorted order, thereby satisfying invariant (2) at the beginning of the $(i+1)$-th execution.
+
+Next, we show that invariant (3) holds at the beginning of the $(i + 1)$-th execution if all invariants above held at the beginning of the $i$-th execution.
+
+We note that during the execution of the loop, we insert the children of the $i$-th smallest value into \textit{secondary} (this follows from (1)). Combined with (3), this means that at the end of the $i$-th execution, the top $i$ elements and all of their immediate children have been inserted into \textit{secondary}.
+
+Finally, we show that invariant (1) holds, which is the critical invarient. 
+
+Again, consider the $i$-th execution of the for-loop. We want to show that after this execution is complete, \textit{secondary} contains the $(i+1)$-th smallest element (if one exists) and that this element is the root. By (3), we know that we've inserted the top $i$ elements and all of their immediate children to \textit{secondary} at the end of the $i$-th exectuon. The first claim is that the $(i+1)$-th element (if it exists) must be a child of the top $i$ elements (and as such, has been inserted into \textit{secondary}). Suppose this were not the case. Then that means that the $(i+1)$-th smallest element, $C$, is the child of a node whose value is not in the top $i$ elements, $P$. However, by the min-heap property, it must be the case that the value of $P$ is smaller than that of $C$ (strictly smaller in our-case), which contradicts the fact that $P$ is the $(i+1)$-th smallest node. Therefore, by contradiction, it must be the case that the $(i+1)$-th smallest node is a child of the top $i$ elements.
+
+Combined with (3), this means this node has been inserted into \textit{secondary}. By the min-heap property, now that we have removed the root node (which was the $i$-th smallest element), it must be the case that the node containing the $(i+1)$-th element is now the root node by (3). This shows that after the loop execution, invariant (1) still holds.
+
+
+Combining all of the above, we have that after $k$ execution of the for loop (beginning of the $k+1$), the following invariants hold:
+\begin{enumerate}
+  \item \textit{secondary} contains the $k+1$-th smallest distance, and this is its root element.
+  \item \textit{closestsEvents}$[0 \cdots k-1]$ contains the top-$k$ elements, in ascending order.
+  \item The top $k$ elements and all of their immediate children have been inserted into \textit{secondary} at some point.
+\end{enumerate}
+In particular, since (2) holds, this shows that our algorithm is correct.
+
+\textbf{Runtime Analysis}
+
+We now analyze the run-time of the proposed algorithm. Constructing the hash-map \textit{events} takes $\bigo{n}$ time. Constructing the min-heap \textit{primary}, by the results from CS161, takes $\bigo{n}$ time. We then iterate $k$ times, each time extracting one element and adding two elements to \textit{secondary} (plus some constant amount of work to lookup the event and move it to the output array). We first note that since at each iteration we extract an element and add two, the size of \textit{secondary} is $\bigo{k}$. We then recall that extraction from a min-heap of size $k$ is $\bigo{\log k}$ time, and insertion is $\bigo{\log k}$ time. As such, this part of the algorithm takes $\bigo{k \log k}$ time. 
+
+Combining the two results above, our algorithm runs in $\bigo{n + k \log n}$.
+
 \end{solution}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
