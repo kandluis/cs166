@@ -1,0 +1,270 @@
+\documentclass[12pt]{exam}
+
+\usepackage[utf8]{inputenc}  % For UTF8 source encoding.
+\usepackage{amsmath}  % For displaying math equations.
+\usepackage{amsfonts} % For mathematical fonts (like \mathbb{E}!).
+\usepackage{upgreek}  % For upright Greek letters, such as \upvarphi.
+\usepackage{wasysym}  % For additional glyphs (like \smiley!).
+% For document margins.
+\usepackage[left=.8in, right=.8in, top=1in, bottom=1in]{geometry}
+\usepackage{lastpage} % For a reference to the number of pages.
+
+% TODO: Enter your name here :)
+\newcommand*{\authorname}{[Your name goes here]}
+
+\newcommand*{\psetnumber}{1}
+\newcommand*{\psetdescription}{Range Minimum Queries}
+\newcommand*{\duedate}{Tuesday, April 16}
+\newcommand*{\duetime}{2:30 pm}
+
+% Fancy headers and footers
+\headrule
+\firstpageheader{CS166\\Spring 2019}{Problem Set \psetnumber\\\psetdescription}{Due: \duedate\\at \duetime}
+\runningheader{CS166}{Problem Set \psetnumber}{\authorname}
+\footer{}{\footnotesize{Page \thepage\ of \pageref{LastPage}}}{}
+
+% Exam questions.
+\newcommand{\Q}[1]{\question{\large{\textbf{#1}}}}
+\qformat{}  % Remove formatting from exam questions.
+
+% Useful macro commands.
+\newcommand*{\ex}{\mathbb{E}}
+\newcommand*{\bigtheta}[1]{\Theta\left( #1 \right)}
+\newcommand*{\bigo}[1]{O \left( #1 \right)}
+\newcommand*{\bigomega}[1]{\Omega \left( #1 \right)}
+\newcommand*{\prob}[1]{\text{Pr} \left[ #1 \right]}
+\newcommand*{\var}[1]{\text{Var} \left[ #1 \right]}
+
+\newcommand*{\RMQ}{\textrm{RMQ}}
+\newcommand*{\RMQcomplexity}[2]{\left< #1, #2 \right>}
+
+% Custom formatting for problem parts.
+\renewcommand{\thepartno}{\roman{partno}}
+\renewcommand{\partlabel}{\thepartno.}
+
+% Framed answers.
+\newcommand{\answerbox}[1]{
+\begin{framed}
+\hspace{\fill}
+\vspace{#1}
+\end{framed}}
+
+% MZ
+\usepackage{amsthm}
+\usepackage{amssymb}
+\let\oldemptyset\emptyset
+\renewcommand{\emptyset}{\text{\O}}
+\renewcommand\qedsymbol{$\blacksquare$}
+\newenvironment{prf}{{\bfseries Proof.}}{\qedsymbol}
+\newcommand{\bi}[1]{\textit{\textbf{#1}}}
+\newcommand{\annotate}[1]{\textit{\textcolor{blue}{#1}}}
+\usepackage{stmaryrd}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.15}
+\makeatletter
+\@namedef{ver@framed.sty}{9999/12/31}
+\@namedef{opt@framed.sty}{}
+\makeatother
+\usepackage{minted}
+\usepackage{mathtools}
+\usepackage{alltt}
+
+\printanswers
+
+\setlength\answerlinelength{2in} \setlength\answerskip{0.3in}
+
+\begin{document}
+\title{CS166 Problem Set \psetnumber: \psetdescription}
+\author{\authorname}
+\date{}
+\maketitle
+\thispagestyle{headandfoot}
+
+\begin{questions}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\Q{Problem One: Skylines (3 Points)}
+
+A \bi{skyline} is a geometric figure consisting of a number of variable-height boxes of width 1 placed next to one another that all share the same baseline. Here's some example skylines, which might give you a better sense of where the name comes from:
+
+\begin{tikzpicture}[baseline]
+\begin{axis}[width=4.5cm,height=4.5cm,axis y line=none, axis x line*=none, ybar interval=1, ytick=\empty, xticklabels={$4$, $2$, $3$, $1$}, ymin=0,]
+\addplot coordinates {(0, 4) (1, 2) (2, 3) (3, 1) (4, 1)};
+\end{axis}
+\end{tikzpicture}%
+%
+\hskip 4pt
+%
+\begin{tikzpicture}[baseline]
+\begin{axis}[width=7.5cm,height=8cm,axis y line=none, axis x line*=none, ybar interval=1, ytick=\empty, xticklabels={$2$, $7$, $1$, $8$, $3$, $0$, $5$, $4$}, ymin=0]
+\addplot coordinates {(0, 2) (1, 7) (2, 1) (3, 8) (4, 3) (5,0) (6,5) (7,4) (8,4)};
+\end{axis}
+\end{tikzpicture}%
+%
+\hskip 4pt
+% 
+\begin{tikzpicture}[baseline]
+\begin{axis}[width=4.5cm,height=4.5cm,axis y line=none, axis x line*=none, ybar interval=1, ytick=\empty, xticklabels={$4$, $3$, $2$, $1$}, ymin=0]
+\addplot coordinates {(0, 4) (1, 3) (2, 2) (3, 1) (4, 1)};
+\end{axis}
+\end{tikzpicture}%
+%
+\hskip 4pt
+% 
+\begin{tikzpicture}[baseline]
+\begin{axis}[width=5.3cm,height=7cm,axis y line=none, axis x line*=none, ybar interval=1, ytick=\empty, xticklabels={$1$, $3$, $7$, $4$, $2$}, ymin=0]
+\addplot coordinates {(0, 1) (1, 3) (2, 7) (3, 4) (4, 2) (5, 2)};
+\end{axis}
+\end{tikzpicture}%
+
+Notice that a skyline can contain boxes of height 0. However, skylines can't contain boxes of negative height.
+
+You're interested in finding the area of the largest axis-aligned rectangle that fits into a given skyline. For example, here are the largest rectangles you can fit into the above skylines:
+
+\begin{tikzpicture}
+\begin{axis}[width=4.5cm,height=4.5cm,axis y line=none, axis x line*=none, const plot, stack plots=y, area style,ymin=0,xtick=\empty]
+\addplot[fill=red!30] coordinates
+{(0,2) (1,2) (2,2) (3,0) (4,0)}
+\closedcycle
+node[below right] at (1, 1.5){\textbf{6}};
+\addplot[fill=blue!30] coordinates
+{(0,2) (1,0) (2,1) (3,1) (4,1)}
+\closedcycle;
+\end{axis}
+\end{tikzpicture}%
+%
+\hskip 4pt
+%
+\begin{tikzpicture}
+\begin{axis}[width=7.5cm,height=8cm,axis y line=none, axis x line*=none, const plot, stack plots=y, area style,ymin=0,xtick=\empty]
+\addplot[fill=red!30] coordinates
+{(0,0) (1,0)(2,0)(3,0)(4,0)(5,0)(6,4)(7,4)(8,4)}
+\closedcycle
+node[below right] at (6.5, 2.5) {\textbf{8}};
+\addplot[fill=blue!30] coordinates
+{(0,2) (1,7) (2,1) (3,8) (4,3)(5,0)(6,1)(7,0)(8,0)}
+\closedcycle;
+\end{axis}
+\end{tikzpicture}%
+%
+\hskip 4pt
+% 
+\begin{tikzpicture}[baseline]
+\begin{axis}[width=4.5cm,height=4.5cm,axis y line=none, axis x line*=none, const plot, stack plots=y, area style,ymin=0,xtick=\empty]
+\addplot[fill=red!30] coordinates
+{(0,3) (1,3) (2,0) (3,0) (4,0)}
+\closedcycle
+node[below right] at (0.5, 2){\textbf{6}};
+\addplot[fill=blue!30] coordinates
+{(0,1) (1,0) (2,2) (3,1) (4,1)}
+\closedcycle;
+\end{axis}
+\end{tikzpicture}%
+%
+\hskip 4pt
+% 
+\begin{tikzpicture}[baseline]
+\begin{axis}[width=5.3cm,height=7cm,axis y line=none, axis x line*=none, const plot, stack plots=y, area style,ymin=0,xtick=\empty]
+\addplot[fill=red!30] coordinates
+{(0,0) (1,3) (2,3) (3,3) (4,0) (5,0)}
+\closedcycle
+node[below right] at (2, 2){\textbf{9}};
+\addplot[fill=blue!30] coordinates
+{(0,1) (1,0) (2,4) (3,1) (4,2) (5,2)}
+\closedcycle;
+\end{axis}
+\end{tikzpicture}%
+
+Design an $O(n)$-time algorithm for this problem, where $n$ is the number of constituent rectangles in the skyline. For simplicity, you can assume that no two boxes in the skyline have the same height. Follow the advice from our Problem Set Policies handout when writing up your solution -- give a brief overview of how your algorithm works, describe it as clearly as possible, formally prove correctness, and then argue why the runtime is $O(n)$.
+
+\begin{solution}
+Your solution goes here!
+\end{solution}
+
+\newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\Q{Problem Two: Area Minimum Queries (4 Points)}
+
+In what follows, if $A$ is a 2D array, we'll denote by $A[i, j]$ the entry at row $i$, column $j$, zero-indexed.
+
+This problem concerns a two-dimensional variant of RMQ called the \textbf{\emph{area minimum query}} problem, or \textbf{\emph{AMQ}}. In AMQ, you are given a fixed, two-dimensional array of values and will have some amount of time to preprocess that array. You'll then be asked to answer queries of the form ``what is the smallest number contained in the rectangular region with upper-left corner $(i, j)$ and lower-right corner $(k, l)$?'' Mathematically, we'll define $AMQ_A((i, j), (k, l))$ to be $\min_{i \le s \le k, j \le t \le l} A[s, t]$. For example, consider the following array:
+\[
+\begin{array}{|c|c|c|c|c|c|c|}
+\hline
+31 & 41 & 59 & 26 & 53 & 58 & 97 \\ \hline
+93 & 23 & 84 & 64 & 33 & 83 & 27 \\ \hline
+95 &  2 & 88 & 41 & 97 & 16 & 93 \\ \hline
+99 & 37 & 51 &  5 & 82 &  9 & 74 \\ \hline
+94 & 45 & 92 & 30 & 78 & 16 & 40 \\ \hline
+62 & 86 & 20 & 89 & 98 & 62 & 80 \\ \hline
+\end{array}
+\]
+
+Here, $A[0, 0]$ is the upper-left corner, and $A[5, 6]$ is the lower-right corner. In this setting:
+\begin{itemize}
+\item $AMQ_A((0, 0), (5, 6)) = 2$
+\item $AMQ_A((0, 0), (0, 6)) = 26$
+\item $AMQ_A((2, 2), (3, 3)) = 5$
+\end{itemize}
+
+For the purposes of this problem, let $m$ denote the number of rows in $A$ and $n$ the number of columns.
+\begin{parts}
+
+\part Design and describe an $\RMQcomplexity{\bigo{mn}}{\bigo{\min\{m, n\}}}$-time data structure for AMQ.
+
+\begin{solution}
+Your solution goes here!
+\end{solution}
+
+\part Design and describe an $\RMQcomplexity{\bigo{mn \log m \log n}}{\bigo{1}}$-time data structure for AMQ.
+
+\begin{solution}
+Your solution goes here!
+\end{solution}
+
+\end{parts}
+
+It turns out that you can improve these bounds all the way down to $\RMQcomplexity{\bigo{mn}}{\bigo{1}}$ using some very clever techniques. This might make for a fun final project topic if youâ€™ve liked our discussion of RMQ so far!
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\Q{Problem Three: Hybrid RMQ Structures (4 Points)}
+
+Let's begin with some new notation. For any $k \ge 0$, let's define the function $\mathbf{\textbf{log}^{(k)} n}$ to be the function:
+\[
+  \overbrace{\log \log \log \ldots \log}^{k \textrm{ times}} n
+\]
+
+For example:
+\[
+  \log^{(0)} n = n \qquad \log^{(1)} n = \log n \qquad \log^{(2)} n = \log \log n \qquad \log^{(3)} n = \log \log \log n
+\]
+
+This question explores these sorts of repeated logarithms in the context of range minimum queries.
+\begin{parts}
+
+\part Using the hybrid framework, show that that for any fixed $k \ge 1$, there is an RMQ data structure with time complexity $\RMQcomplexity{\bigo{n \log^{(k)} n}}{\bigo{1}}$. For notational simplicity, we'll refer to the $k$th of these
+structures as $D_k$.
+
+\begin{solution}
+Your solution goes here!
+\end{solution}
+
+(Yes, we know that the Fischer-Heun structure is a $\RMQcomplexity{\bigo{n}}{\bigo{1}}$ solution to RMQ and therefore technically meets these requirements. But for the purposes of this question, let's imagine that you didn't know that such a structure existed and were instead curious to see how fast an RMQ structure you could make without resorting to the Method of Four Russians. \smiley)
+
+\part Although every $D_k$ data structure has query time $\bigo{1}$, the query times on the $D_k$ structures will increase as k increases. Explain why this is the case and why this doesn't contradict your result from part (i).
+
+\begin{solution}
+Your solution goes here!
+\end{solution}
+
+\end{parts}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\Q{Problem Four: Implementing RMQ Structures ($\mathbf{10^+}$ Points)}
+
+This one is all coding, so you don't need to write anything here. Make sure to submit your final implementations on myth.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{questions}
+\end{document}
