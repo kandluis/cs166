@@ -1,0 +1,52 @@
+Your task is to implement the functions defined in the five RMQ types. Of the
+files included here, you will definitely need to modify these ten:
+
+  * PrecomputedRMQ.{h,cpp}
+  * SparseTableRMQ.{h,cpp}
+  * HybridRMQ.{h,cpp}
+  * FischerHeunRMQ.{h,cpp}
+  * FastestRMQ.{h,cpp}
+  
+You will also probably want to read the header file RMQEntry.h. All of these
+RMQ types work with arrays of objects of type RMQEntry. RMQEntry just wraps an
+integer in a way where you can still easily compare RMQEntry objects against
+one another, but where you can't accidentally implicitly convert an integer
+representing an index into an integer representing a value in the array itself.
+
+Note that when performing a range minimum query, you should return the index of
+the minimum element in the range, not the minimum element itself. Since indices
+are represented with size_t's and elements are represented with RMQEntry's, the
+type system will let you know if you're mixing and matching these.
+
+We've provided a working implementation of an RMQ structure backed by a segment
+tree, which we've used to validate your implementation. The segment tree is an
+<O(n), O(log n)> solution to RMQ that uses a different approach than the ones
+we saw in lecture. You're welcome to look over SegmentTreeRMQ.{h,cpp} if you're
+curious to see how it works. It might give you some insight into how the
+RMQEntry type would get used in practice. However, you shouldn't need to modify
+any of the code there.
+
+To build and run your code - both to check for correctness and to see runtime
+information - run make and then execute
+
+   ./run-tests -rmq [name of the class to run]
+   
+For example, to test your PrecomputedRMQ type, you'd run the test driver as
+
+   ./run-tests -rmq PrecomputedRMQ
+
+If you'd like to specify a random seed to use for the you can specify the seed
+as another command-line argument:
+
+   ./run-tests -rmq [name of the class to run] -seed [random seed]
+   
+By default, data is printed out in a nice human-readable format. However, if
+you'd like to output data in a way that's more conducive to later analysis
+(which might come in handy for the FastestRMQ type), you can use the -output
+command line switch to select either "default" or "csv". The csv option will
+output test results in a CSV format. For example:
+
+   ./run-tests -rmq [name of the class to run] -output csv
+
+Once you've gotten everything working, crank the optimizer up to the max by
+replacing -O0 -g in the Makefile with -O3, then see what you find!
