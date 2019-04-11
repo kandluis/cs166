@@ -41,9 +41,12 @@ public:
   std::size_t rmq(std::size_t low, std::size_t high) const;
 
 private:
-  /* TODO: Edit this type to implement it however you'd like. Then, delete this
-   * comment.
-   */
+  // For efficient computation of the index.
+  const RMQEntry* elems_;
+
+  // precomputer_rmp_[i][j] contains the pre-computed RMQ(i,j) value (not the index).
+  // The index can be efficiently computed using pointer arithmetic. 
+  std::vector<std::vector<const RMQEntry*>> precomputed_rmq_;
   
   /* Copying is disabled. */
   PrecomputedRMQ(const PrecomputedRMQ &) = delete;
