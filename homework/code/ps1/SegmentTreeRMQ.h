@@ -127,6 +127,8 @@
 
 #include "RMQEntry.h"
 
+#include <cstddef> // Needed for std::size_t
+
 class SegmentTreeRMQ {
 public:
   /* Constructs an RMQ structure from the specified array of elements. That

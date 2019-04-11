@@ -10,7 +10,7 @@
 \usepackage{lastpage} % For a reference to the number of pages.
 
 % TODO: Enter your name here :)
-\newcommand*{\authorname}{[Your name goes here]}
+\newcommand*{\authorname}{Luis A. Perez}
 
 \newcommand*{\psetnumber}{1}
 \newcommand*{\psetdescription}{Range Minimum Queries}
@@ -177,7 +177,13 @@ node[below right] at (2, 2){\textbf{9}};
 Design an $O(n)$-time algorithm for this problem, where $n$ is the number of constituent rectangles in the skyline. For simplicity, you can assume that no two boxes in the skyline have the same height. Follow the advice from our Problem Set Policies handout when writing up your solution -- give a brief overview of how your algorithm works, describe it as clearly as possible, formally prove correctness, and then argue why the runtime is $O(n)$.
 
 \begin{solution}
-Your solution goes here!
+\textbf{Overview}
+
+The key insight behind the algorithm is to consider the skylines from left to right. Starting with the left-most skyline, it is obvious what the largest box is (1 x \textit{height}). Considering moving along just one skyline to the right, we notice that the largest skyline is (1) either a continuation of the previous skyline, if the boxes height is smaller than the skyline we just encountered, or (2) a box fully containing the current skyline.
+
+\textbf{Representation}
+
+Let \textit{input} be an array of in
 \end{solution}
 
 \newpage
