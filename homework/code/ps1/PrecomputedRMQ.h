@@ -43,10 +43,18 @@ public:
 private:
   // For efficient computation of the index.
   const RMQEntry* elems_;
+  // How many elements we hold.
+  const std::size_t numElems_;
+
+  // Computes the index into our flat memory representation to solve RMQ(i,j).
+  // See comments in .cpp for more details.
+  inline std::size_t index(std::size_t i, std::size_t j) const;
 
   // precomputer_rmp_[i][j] contains the pre-computed RMQ(i,j) value (not the index).
   // The index can be efficiently computed using pointer arithmetic. 
-  std::vector<std::vector<const RMQEntry*>> precomputed_rmq_;
+  // We manage this memory manually to get a small performance improvement over
+  // using a std::vector.
+  const RMQEntry** precomputed_rmq_ = nullptr;
   
   /* Copying is disabled. */
   PrecomputedRMQ(const PrecomputedRMQ &) = delete;

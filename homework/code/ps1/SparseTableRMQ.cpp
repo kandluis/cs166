@@ -2,6 +2,41 @@
 
 #include <math.h>  // Needed for log, pow function.
 
+// See the notes in PrecomputedRMQ.cpp for notation definition.
+// We borrow the CRMQ(s, i) syntax from there.
+//
+// We define a sparse, cache-friendly recursion for RMQ as follows.
+// Normally, a sparse RMQ(i, j) would be filled-in using the following
+// recursion:
+// 
+// RMQ(2^{j}, i) <- f(RMQ(i + 1, j), RMQ(i, j - 1))
+// 
+// However, the above is not very cache friendly, since we jump around in
+// two indexes (so we'll be thrasing L3 cache).
+//
+// Instead, we can rephrase the problems as follows, where l is the
+// length of the query, and i is the starting index.
+//
+// RMQ(i, j) = CRMQ(j - i + 1, i)
+//
+// with the following re-currence:
+//
+// CRMQ(s, i) = f(CRMQ(s - 1, i), CRMQ(s - 1, i + 1))
+//
+// Note that the above is far friendlier, since we can imagine fixing
+// a value of s (and s - 1), and then zipping over the i values.
+//
+// As a further optimization, we lay out the above recurrance as a flat
+// memory block, which we allocate directly (but don't initialize). The
+// tricky part is that we don't want to allocate n^2 memory, but more
+// of n(n+1)/2. We therefore need a mapping from (s, i) -> k.
+// Note that we don't care about the reverse mapping.
+// We define one as follows, so as to keep our cache-friendliness.
+//
+// (s, i) -> sum_{l=1}^{s-1} (n - l + 1) + i = (s-1)*(2*n - s + 2) / 2 + i
+// 
+// The above function is mostly useful only when looking up values.
+
 SparseTableRMQ::SparseTableRMQ(const RMQEntry* elems, std::size_t numElems) : elems_(elems) {
   // As discussed in class, for the sparse matrix representation, we note that
   // RMQ(i, 2^j) can be decomposed as min { RMQ(i, 2^{j-1}), RMQ(2^{j-1} + 1, 2^j)}
