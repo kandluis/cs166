@@ -41,19 +41,16 @@ public:
   std::size_t rmq(std::size_t low, std::size_t high) const;
 
 private:
+  // Computes the index into our flat memory representation to solve CRMQ(size,i).
+  // See comments in .cpp for more details.
+  inline std::size_t index(std::size_t size, std::size_t j) const;
+
   // For efficient computation of the index.
   const RMQEntry* elems_;
   // How many elements we hold.
   const std::size_t numElems_;
 
-  // Computes the index into our flat memory representation to solve RMQ(i,j).
-  // See comments in .cpp for more details.
-  inline std::size_t index(std::size_t i, std::size_t j) const;
-
-  // precomputer_rmp_[i][j] contains the pre-computed RMQ(i,j) value (not the index).
-  // The index can be efficiently computed using pointer arithmetic. 
-  // We manage this memory manually to get a small performance improvement over
-  // using a std::vector.
+  // See comments in .cpp. This is a flattened array.
   const RMQEntry** precomputed_rmq_ = nullptr;
   
   /* Copying is disabled. */

@@ -32,8 +32,7 @@
 // 
 // The above function is mostly useful only when looking up values.
 
-inline std::size_t PrecomputedRMQ::index(std::size_t i, std::size_t j) const {
-  const std::size_t size = j - i + 1;
+inline std::size_t PrecomputedRMQ::index(std::size_t size, std::size_t i) const {
   return (size - 1) * (2 * numElems_ - size + 2) / 2 + i;
 }
 
@@ -71,5 +70,6 @@ PrecomputedRMQ::~PrecomputedRMQ() {
 
 std::size_t PrecomputedRMQ::rmq(std::size_t low, std::size_t high) const {
   // [low, high) is half-open, unlike the answers we stored in our data-structure.
-  return precomputed_rmq_[index(low, high - 1)] - elems_;
+  const std::size_t size = high - low;
+  return precomputed_rmq_[index(size, low)] - elems_;
 }

@@ -40,13 +40,22 @@ public:
   std::size_t rmq(std::size_t low, std::size_t high) const;
 
 private:
+  // Computes the index into our flat memory representation to solve CSRMQ(p,i).
+  // See comments in .cpp for more details.
+  inline std::size_t index(std::size_t p, std::size_t i) const;
+
   // For efficient computation of the index.
   const RMQEntry* elems_;
+  const std::size_t numElems_;
+  
+  // Keeping around all powersOfTwo. O(log n) space.
+  std::vector<std::size_t> powersOfTwo_;
+  // We guarantee that largestPowerOfTwo_[k-1] = p such that 2^p <=k < 2^{p+1}.
+  // O(n) space.
+  std::vector<std::size_t> largestPowerOfTwo_;
 
-  // precomputer_rmp_[i][j] contains the pre-computed RMQ(i,2^j) value (not the index).
-  // The index can be efficiently computed using pointer arithmetic.
-  // This is a sparse table since it'll be of approximately size ~O(n*logn)
-  std::vector<std::vector<const RMQEntry*>> precomputed_rmq_;
+  // See comments .cpp. This is a flattened array. O(n log n) space.
+  const RMQEntry** precomputed_rmq_;
   
   /* Copying is disabled. */
   SparseTableRMQ(const SparseTableRMQ &) = delete;
