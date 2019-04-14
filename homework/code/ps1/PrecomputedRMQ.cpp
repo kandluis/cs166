@@ -1,5 +1,6 @@
 #include "PrecomputedRMQ.h"
 
+#include <stdlib.h> // malloc and free
 
 // Normally, a precomputed RMQ(i, j) would be filled-in using the following
 // recursion:

@@ -1,5 +1,6 @@
 #include "SparseTableRMQ.h"
 
+#include <stdlib.h>  // malloc and free.
 #include <math.h>  // Needed for log, pow function.
 
 // See the notes in PrecomputedRMQ.cpp for notation definition.
