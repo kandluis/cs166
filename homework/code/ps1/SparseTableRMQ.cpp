@@ -9,7 +9,7 @@
 // Normally, a sparse CRMQ(s, j) would be filled-in using the following
 // recursion:
 // 
-// CRMQ(2^{j}, i) <- f(CRMQ(2^{j-1}, i), RMQ(2^{j-1}, i + 2^{j-1} + 1))
+// CRMQ(2^{j}, i) <- f(CRMQ(2^{j-1}, i), RMQ(2^{j-1}, i + 2^{j-1}))
 //
 // Note that the above should be somewhat cache-friendly since we're fixing
 // the first index. Though the last index does jump from i -> i + 2^{j-1} + i.
@@ -21,13 +21,13 @@
 //
 // For our mapping, function, we have the following, using the same logic
 // as we did in PrecomputedRMQ.
-// (p, i) -> sum_{l=0}^{p-1} (n - 2^p + 1) + i = p*(n-2^p+1) + i
+// (p, i) -> sum_{l=0}^{p-1} (n - 2^l + 1) + i = (n+1)*p - 2^p + 1 + i
 //
 // The above function is mostly useful when looking up values in our table.
 
 
 inline std::size_t SparseTableRMQ::index(std::size_t p, std::size_t i) const {
-  return p * (numElems_ - powersOfTwo_[p] + 1) + i;
+  return (numElems_+1)*p - powersOfTwo_[p] + 1 + i;
 }
 
 SparseTableRMQ::SparseTableRMQ(const RMQEntry* elems, std::size_t numElems) : elems_(elems), numElems_(numElems) {
@@ -65,11 +65,13 @@ SparseTableRMQ::SparseTableRMQ(const RMQEntry* elems, std::size_t numElems) : el
   for (std::size_t prevSize = 1, size = 2; size <= numElems; prevSize *= 2, size *= 2) {
     for (std::size_t i = 0; i < (numElems - size + 1); i++ ) {
       // TODO(luis): This access is not cache friendly. Can we improve it?
-      const RMQEntry* right_range = precomputed_rmq_[prevSizeStartIndex + i + prevSize + 1];
+      const RMQEntry* right_range = precomputed_rmq_[prevSizeStartIndex + i + prevSize];
       const RMQEntry* left_range = precomputed_rmq_[prevSizeStartIndex + i];
       const RMQEntry* minimum = (*left_range < *right_range) ? left_range : right_range;
       precomputed_rmq_[currSizeStartIndex + i] = minimum;
     }
+    prevSizeStartIndex = currSizeStartIndex;
+    currSizeStartIndex += (numElems - size + 1);
   }
 }
 
