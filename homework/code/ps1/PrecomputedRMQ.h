@@ -51,7 +51,7 @@ private:
   const std::size_t numElems_;
 
   // See comments in .cpp. This is a flattened array.
-  const RMQEntry** precomputed_rmq_ = nullptr;
+  std::vector<const RMQEntry*> precomputed_rmq_;
   
   /* Copying is disabled. */
   PrecomputedRMQ(const PrecomputedRMQ &) = delete;

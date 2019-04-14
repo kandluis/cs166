@@ -1,7 +1,6 @@
 #include "SparseTableRMQ.h"
 
-#include <stdlib.h>  // malloc and free.
-#include <math.h>  // Needed for log, pow function.
+#include <math.h>  // Needed for log, ceil functions.
 
 // See the notes in PrecomputedRMQ.cpp for notation definition.
 // We borrow the CRMQ(s, i) syntax from there.
@@ -35,6 +34,7 @@ SparseTableRMQ::SparseTableRMQ(const RMQEntry* elems, std::size_t numElems) : el
   // We pre-compute all powers of 2 <= to numElems. This is basically pow(2, i).
   // This also helps us know how much space we'll need.
   std::size_t spaceNeeded = 0;
+  powersOfTwo_.reserve(ceil(log2(numElems)));
   for (std::size_t powerOfTwo = 1; powerOfTwo <= numElems; powerOfTwo *= 2) {
     spaceNeeded += (numElems - powerOfTwo + 1);
     powersOfTwo_.push_back(powerOfTwo);
@@ -49,9 +49,7 @@ SparseTableRMQ::SparseTableRMQ(const RMQEntry* elems, std::size_t numElems) : el
     largestPowerOfTwo_[k-1] = exponent;
   }
 
-  // Pre-allocate a big block required to hold all of our values.
-  precomputed_rmq_ = (const RMQEntry**) malloc(sizeof(RMQEntry*) * spaceNeeded);
-
+  precomputed_rmq_.reserve(spaceNeeded);
   // Fill-in the base case. This is p = 0, s= 2^p = 1. We fill-manually.
   // This takes up the first n spaces.
   for (std::size_t i = 0; i < numElems; ++i) {
@@ -77,8 +75,7 @@ SparseTableRMQ::SparseTableRMQ(const RMQEntry* elems, std::size_t numElems) : el
 }
 
 SparseTableRMQ::~SparseTableRMQ() {
-  // We only need to clear our main data structure. The others are vectors.
-  free(precomputed_rmq_);
+  // Nothing to be done. All variables are freed automatically.
 }
 
 std::size_t SparseTableRMQ::rmq(std::size_t low, std::size_t high) const {

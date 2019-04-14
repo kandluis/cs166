@@ -47,7 +47,7 @@ private:
   // For efficient computation of the index.
   const RMQEntry* elems_;
   const std::size_t numElems_;
-  
+
   // Keeping around all powersOfTwo. O(log n) space.
   std::vector<std::size_t> powersOfTwo_;
   // We guarantee that largestPowerOfTwo_[k-1] = p such that 2^p <=k < 2^{p+1}.
@@ -55,7 +55,7 @@ private:
   std::vector<std::size_t> largestPowerOfTwo_;
 
   // See comments .cpp. This is a flattened array. O(n log n) space.
-  const RMQEntry** precomputed_rmq_;
+  std::vector<const RMQEntry*> precomputed_rmq_;
   
   /* Copying is disabled. */
   SparseTableRMQ(const SparseTableRMQ &) = delete;

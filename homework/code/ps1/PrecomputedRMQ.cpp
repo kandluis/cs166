@@ -1,7 +1,5 @@
 #include "PrecomputedRMQ.h"
 
-#include <stdlib.h> // malloc and free
-
 // Normally, a precomputed RMQ(i, j) would be filled-in using the following
 // recursion:
 // 
@@ -41,7 +39,7 @@ PrecomputedRMQ::PrecomputedRMQ(const RMQEntry* elems, std::size_t numElems)
   : elems_(elems), numElems_(numElems) {
   // Pre-allocate a big block of size n(n+1)/2.
   const std::size_t precomputedSize = numElems * (numElems + 1) / 2;
-  precomputed_rmq_ = (const RMQEntry**) malloc(sizeof(RMQEntry*) * precomputedSize);
+  precomputed_rmq_.reserve(precomputedSize);
 
   // Fill-in the base case. This is s = 1. We fill-manually.
   for (std::size_t i = 0; i < numElems; ++i) {
@@ -66,7 +64,7 @@ PrecomputedRMQ::PrecomputedRMQ(const RMQEntry* elems, std::size_t numElems)
 }
 
 PrecomputedRMQ::~PrecomputedRMQ() {
-  free(precomputed_rmq_);
+  // Nothing to do. All members are freed on their own.
 }
 
 std::size_t PrecomputedRMQ::rmq(std::size_t low, std::size_t high) const {
