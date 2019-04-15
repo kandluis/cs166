@@ -8,7 +8,24 @@
 namespace {
 // Computes the Cartesian number 
 std::size_t computeCartesianNumber(const RMQEntry* elems, const std::size_t numElems) {
-  return 0;
+  std::vector<const RMQEntry*> stack;
+  std::size_t number = 0;
+  // Mask is a one-hot encoded bit. It is used to flip bits in number as we move.
+  // 1 is push, 0 is pop.
+  std::size_t mask = 1;
+  for (std::size_t i = 0; i < numElems; i++) {
+    while (!stack.empty() && elems[i] < *stack.back()) {
+      // Popping from the stack. Shift the mask to keep these as 0s.
+      stack.pop_back();
+      mask = mask << 1;
+    }
+    // Eventually we push the element on the stack.
+    stack.push_back(elems + i);
+    number &= mask;
+    mask = mask << 1;
+  }
+  // All remaining pops are just 0.
+  return number;
 }
 }  // namespace
 
