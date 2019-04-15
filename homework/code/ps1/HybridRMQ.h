@@ -9,6 +9,7 @@
 #define HybridRMQ_Included
 
 #include "RMQEntry.h"
+#include "SparseTableRMQ.h"
 
 #include <cstddef> // Needed for std::size_t
 
@@ -42,9 +43,20 @@ public:
   std::size_t rmq(std::size_t low, std::size_t high) const;
 
 private:
-  /* TODO: Edit this type to implement it however you'd like. Then, delete this
-   * comment.
-   */
+  // The elements themselves.
+  const RMQEntry* elems_;
+  // The number of total elements.
+  const std::size_t numElems_;
+  // The size of the blocks used in this hybrid.
+  const std::size_t blockSize_;
+  // The number of blocks in our data structure.
+  const std::size_t numBlocks_;
+  // The minimums of each block. There are ceil(numElems_ / blockSize_) blocks.
+  std::vector<RMQEntry> blockMinimums_;
+  // Maps from indexes in blockMinimums to the original RMQEntry.
+  std::vector<const RMQEntry*> blockMinimumsIndex_;
+  // The RMQ on the top-level array (eg, the array containing the block minima).
+  std::unique_ptr<SparseTableRMQ> rootRMQ_;
   
   /* Copying is disabled. */
   HybridRMQ(const HybridRMQ &) = delete;

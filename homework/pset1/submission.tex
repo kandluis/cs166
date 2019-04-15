@@ -174,16 +174,49 @@ node[below right] at (2, 2){\textbf{9}};
 \end{axis}
 \end{tikzpicture}%
 
-Design an $O(n)$-time algorithm for this problem, where $n$ is the number of constituent rectangles in the skyline. For simplicity, you can assume that no two boxes in the skyline have the same height. Follow the advice from our Problem Set Policies handout when writing up your solution -- give a brief overview of how your algorithm works, describe it as clearly as possible, formally prove correctness, and then argue why the runtime is $O(n)$.
+Design an $\bigo{n}$-time algorithm for this problem, where $n$ is the number of constituent rectangles in the skyline. For simplicity, you can assume that no two boxes in the skyline have the same height. Follow the advice from our Problem Set Policies handout when writing up your solution -- give a brief overview of how your algorithm works, describe it as clearly as possible, formally prove correctness, and then argue why the runtime is $\bigo{n}$.
 
 \begin{solution}
 \textbf{Overview}
 
-The key insight behind the algorithm is to consider the skylines from left to right. Starting with the left-most skyline, it is obvious what the largest box is (1 x \textit{height}). Considering moving along just one skyline to the right, we notice that the largest skyline is (1) either a continuation of the previous skyline, if the boxes height is smaller than the skyline we just encountered, or (2) a box fully containing the current skyline.
+The key insight into this problem is that increasing the height or increasing the width of a box always lead to a box with higher area. Then we note that there exists at least one box of height equal to some rectangle (trivially, this is the box containing just that rectangle). As such, we can break the problem into (1) for each possible height, find the largest area of all boxes of that height and (2) out of those heights, find the largest area. At first this seems like a lot of work, but using RMQ, this process is actually contant time.
+
+Next, we can be smart about how we approach this. For example, we consider the heights in increasing order. That is, find all boxes containing the smallest rectangle, and from those boxes, find the largest area. Trivially, the largest area in this case is simply the box spanning the entire range.
+
+We now have the final insight. Any box of higher height \textit{cannot} contain the minimum. This means that our minimum essentially splits the skyline into two parts, a left and a right. We can treat each of these as subproblems, and repeat the process. In this way, for each height, we will obtain the area of the largest box of that height. Then we simply return the maximum of these values.
 
 \textbf{Representation}
+We assume the skyline is given simple as an array $A$ of integers. From the problem statement, this array is of size $n$ and contains only distinct values (no two skylines are the same height). Furthermore, $A[i]$ corresponds the the height of the $i$-th rectangle, from left-to-right, on the skyline.
 
-Let \textit{input} be an array of in
+Our algorithm will rely on using RMQs, and as such, we create an RMQ data structure which we call RMQ$_A$.
+
+We will also keep an auxilary data structure, \textit{largestAreaForBoxOfHeight} which is of size $n$, and where \textit{largestAreaForBoxOfHeight}$[i]$ will store the area of the largest box for our skyline whose height is equal to the height of the $i$-th rectangle. For example, \textit{largestAreaForBoxOfHeight}$[0]$ has the largest area of a box whose height is equal to that of the $0$-th rectangle. 
+
+\textbf{Algorithm Details}
+We first construct RMQ$_A$. We note that, using the Fischer-Heun algorithm, this data structure can be constructed in $\bigo{n}$ time. We further note that we can query it for the index of the minimum value in any range $[i,j]$ in $\bigo{1}$ time.
+
+We describe our algorith as working on a subarray, $A[i,\cdots,j]$. We can imagine it begins with $i = 0, j = n -1$. For this subarray, first, we find the index of the minimum value contained in the subarray using our pre-computed RMQ$_A$. Let this index be $k$. In other words, $A[k] < A[l], \forall i \leq l \leq j$. We then compute $A[k] * (i - j + 1)$ and set this as the value for \textit{largestAreaForBoxOfHeight}$[k]$. 
+
+We simply repeat the above process on the subarrays $A[i, \cdots, k-1]$ and $A[k + 1, \cdots j]$ (as long as these subarrays contain at least one-element, otherwise we stop since there is no valid subarray).
+
+In the end, the algorithm simply returns the maximum value found in \textit{largestAreaForBoxOfHeight} as the answer.
+
+\textbf{Proof of Correctness}
+TODO.
+
+\textbf{Analysis of Runtime}
+The run-time analysis is rather straight-forward. Constructing the RMQ data-structure, as discussed in class, takes $\bigo{n}$ time.
+
+Next, we note that for each element that we add to \textit{largestAreaForBoxOfHeight}, we perform a single RMQ query, which takes $\bigo{1}$ times. 
+
+Next, we note that we never set a particular index of \textit{largestAreaForBoxOfHeight} more than once, since once an index is set, the algorithm continues but on the two subarrays \textbf{not} containing that index. As such, we can repeat this process at most $\bigo{n}$ times before the algorithm finishes.
+
+Finally, we note that finding the maximum element in \textit{largestAreaForBoxOfHeight} takes $\bigo{n}$ time. 
+
+Putting it all together, our algorithm runes in $\bigo{n} + \bigo{n} * \bigo{1} + \bigo{n} = \bigo{n}$, as desired.
+
+
+
 \end{solution}
 
 \newpage
@@ -218,7 +251,11 @@ For the purposes of this problem, let $m$ denote the number of rows in $A$ and $
 \part Design and describe an $\RMQcomplexity{\bigo{mn}}{\bigo{\min\{m, n\}}}$-time data structure for AMQ.
 
 \begin{solution}
-Your solution goes here!
+\textbf{Overview}
+
+The key insight into this data structure is that we can decompose the AMQ problem into multiple RMQ problems. To be more precise, an area minimum query consists of first finding the minimum along the rows/columns, and then taking the minimum of this result.
+
+\textbf{}
 \end{solution}
 
 \part Design and describe an $\RMQcomplexity{\bigo{mn \log m \log n}}{\bigo{1}}$-time data structure for AMQ.
@@ -229,7 +266,7 @@ Your solution goes here!
 
 \end{parts}
 
-It turns out that you can improve these bounds all the way down to $\RMQcomplexity{\bigo{mn}}{\bigo{1}}$ using some very clever techniques. This might make for a fun final project topic if youâ€™ve liked our discussion of RMQ so far!
+It turns out that you can improve these bounds all the way down to $\RMQcomplexity{\bigo{mn}}{\bigo{1}}$ using some very clever techniques. This might make for a fun final project topic if you've liked our discussion of RMQ so far!
 
 \newpage
 

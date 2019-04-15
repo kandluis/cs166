@@ -31,6 +31,8 @@ inline std::size_t SparseTableRMQ::index(std::size_t p, std::size_t i) const {
 }
 
 SparseTableRMQ::SparseTableRMQ(const RMQEntry* elems, std::size_t numElems) : elems_(elems), numElems_(numElems) {
+  // Handle some edge-cases. No need to do anything if only one or 0 elements.
+  if (numElems_ < 2) return;
   // We pre-compute all powers of 2 <= to numElems. This is basically pow(2, i).
   // This also helps us know how much space we'll need.
   std::size_t spaceNeeded = 0;
@@ -79,6 +81,9 @@ SparseTableRMQ::~SparseTableRMQ() {
 }
 
 std::size_t SparseTableRMQ::rmq(std::size_t low, std::size_t high) const {
+  // This should never be called with 0 elements. If 1 elements, just return 0.
+  if (numElems_ < 2) return 0;
+  
   // No need for +1 because this is [low, high).
   const std::size_t rangeSize = high - low;
   // We have 2^{exponent} <= rangeSize < 2^{exponent + 1}
