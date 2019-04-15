@@ -68,7 +68,8 @@ SparseTableRMQ::SparseTableRMQ(const RMQEntry* elems, std::size_t numElems) : el
       // TODO(luis): This access is not cache friendly. Can we improve it?
       const RMQEntry* right_range = precomputed_rmq_[prevSizeStartIndex + i + prevSize];
       const RMQEntry* left_range = precomputed_rmq_[prevSizeStartIndex + i];
-      const RMQEntry* minimum = (*left_range < *right_range) ? left_range : right_range;
+      // The smaller entry first. Important for cartesian tree numbers.
+      const RMQEntry* minimum = (*left_range <= *right_range) ? left_range : right_range;
       precomputed_rmq_[currSizeStartIndex + i] = minimum;
     }
     prevSizeStartIndex = currSizeStartIndex;
@@ -91,6 +92,7 @@ std::size_t SparseTableRMQ::rmq(std::size_t low, std::size_t high) const {
   const std::size_t subrange_size = powersOfTwo_[exponent];
   const RMQEntry* left_range = precomputed_rmq_[index(exponent, low)];
   const RMQEntry* right_range = precomputed_rmq_[index(exponent, high - subrange_size)];
-  const RMQEntry* minimum = (*left_range < *right_range) ? left_range : right_range;
+  // The smaller entry first. Important for cartesian tree numbers.
+  const RMQEntry* minimum = (*left_range <= *right_range) ? left_range : right_range;
   return minimum - elems_;
 }

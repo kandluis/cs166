@@ -20,6 +20,7 @@ HybridRMQ::HybridRMQ(const RMQEntry* elems, std::size_t numElems) : elems_(elems
       blockMinimums_.push_back(elems[i]);
       blockMinimumsIndex_.push_back(elems + i);
     }
+    // The smaller entry first. Important for cartesian tree numbers.
     if (elems[i] < blockMinimums_.back()) {
       blockMinimums_.back() = elems[i];
       blockMinimumsIndex_.back() = (elems + i);
@@ -41,6 +42,7 @@ std::size_t HybridRMQ::rmq(std::size_t low, std::size_t high) const {
     // Either one or two adjacent blocks, so we're just doing a linear scan.
     const RMQEntry* min = (elems_ + low);
     for (std::size_t i = low + 1; i < high; i++) {
+      // The smaller entry first. Important for cartesian tree numbers.
       if (elems_[i] < *min) {
         min = (elems_ + i);
       }
@@ -54,7 +56,8 @@ std::size_t HybridRMQ::rmq(std::size_t low, std::size_t high) const {
 
   // Now do a linear scan over the left block.
   const RMQEntry* leftBlock = (elems_ + low);
-  for (std::size_t i = low; i < (lowBlock + 1) * blockSize_; i++) {
+  for (std::size_t i = low + 1; i < std::min((lowBlock + 1) * blockSize_, numElems_); i++) {
+    // The smaller entry first. Important for cartesian tree numbers.
     if (elems_[i] < *leftBlock) {
       leftBlock = (elems_ + i);
     }
@@ -62,6 +65,7 @@ std::size_t HybridRMQ::rmq(std::size_t low, std::size_t high) const {
   // Now a linear scan over the right block (distinct from left-block).
   const RMQEntry* rightBlock = elems_ + highBlock * blockSize_;
   for (std::size_t i = highBlock * blockSize_ + 1; i < high; i++) {
+    // The smaller entry first. Important for cartesian tree numbers.
     if (elems_[i] < *rightBlock) {
       rightBlock = (elems_ + i);
     }
@@ -69,7 +73,8 @@ std::size_t HybridRMQ::rmq(std::size_t low, std::size_t high) const {
   if (*rootIndex < *leftBlock && *rootIndex < *rightBlock) {
     return rootIndex - elems_;
   }
-  if (*leftBlock < *rightBlock) {
+  // The smaller entry first. Important for cartesian tree numbers.
+  if (*leftBlock <= *rightBlock) {
     return leftBlock - elems_;
   }
   return rightBlock - elems_;

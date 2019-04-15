@@ -21,10 +21,10 @@ std::size_t computeCartesianNumber(const RMQEntry* elems, const std::size_t numE
     }
     // Eventually we push the element on the stack.
     stack.push_back(elems + i);
-    number &= mask;
+    number |= mask;
     mask = mask << 1;
   }
-  // All remaining pops are just 0.
+  // All remaining pops are just 0s.
   return number;
 }
 }  // namespace
@@ -43,38 +43,33 @@ FischerHeunRMQ::FischerHeunRMQ(const RMQEntry* elems, std::size_t numElems)
   : elems_(elems)
   ,numElems_(numElems)
   // To avoid crashes. Though we only do non-trivial work when numElems > 16.
-  , blockSize_(std::max(1.0, floor(log2(std::max(numElems, 1UL)) / 4)))
+  , blockSize_(std::max(1.0, ceil(log2(std::max(numElems, 1UL)) / 4)))
   // We have an extra block when numElems is not divisible by block-size.
   ,numBlocks_(numElems / blockSize_ + (numElems % blockSize_ != 0)) {
   // No work to be done.  
   if (numElems_ < 2) return;
 
-  // Don't do any work for trivially small blocks.
-  if (blockSize_ == 1) {
-    rootRMQ_ = std::make_unique<SparseTableRMQ>(elems, numElems);
-    return;
-  }
-
   blockMinimums_.reserve(numBlocks_);
   blockMinimumsIndex_.reserve(numBlocks_);
   leafRMQs_.reserve(numBlocks_);
   // The largest possible Cartesian number is 2 * sqrt(n) - 1.
-  sharedRMQs_.resize(2 * sqrt(numElems) - 1);
+  sharedRMQs_.resize(2 * ceil(sqrt(numElems)) - 1);
   const RMQEntry* blockStart = elems_;
   for (std::size_t i = 0; i < numElems; i++) {
     // Starting a new block.
     if (i % blockSize_ == 0) {
       const std::size_t elemsInBlock = std::min(blockSize_, numElems - i);
+      // Note that for the last block (which may not be blockSize_), the cartesianNumber is still unique.
       const std::size_t index = computeCartesianNumber(blockStart, elemsInBlock);
-      if (sharedRMQs_[index] == nullptr) {
+      if (sharedRMQs_.at(index) == nullptr) {
         sharedRMQs_[index] = std::make_unique<PrecomputedRMQ>(blockStart, elemsInBlock);
       }
-      blockStart = (elems + elemsInBlock);
+      blockStart = (elems + i + elemsInBlock);
       blockMinimums_.push_back(elems[i]);
       blockMinimumsIndex_.push_back(elems + i);
       leafRMQs_.push_back(sharedRMQs_[index].get());
     }
-    if (elems[i] < blockMinimums_.back()) {
+    else if (elems[i] < blockMinimums_.back()) {
       blockMinimums_.back() = elems[i];
       blockMinimumsIndex_.back() = (elems + i);
     }
@@ -90,10 +85,6 @@ FischerHeunRMQ::~FischerHeunRMQ() {
 std::size_t FischerHeunRMQ::rmq(std::size_t low, std::size_t high) const {
   if (numElems_ < 2) return 0;
 
-  if (blockSize_ == 1) { 
-    return rootRMQ_->rmq(low, high);
-  }
-
   const std::size_t lowBlock = (low / blockSize_);
   const std::size_t highBlock = (high - 1) / blockSize_;
   const std::size_t lowBlockStart = lowBlock * blockSize_;
@@ -102,9 +93,9 @@ std::size_t FischerHeunRMQ::rmq(std::size_t low, std::size_t high) const {
     // One block, so just jump to the corresponding leafRMQ.
     return lowBlockStart + leafRMQs_[lowBlock]->rmq(low - lowBlockStart, high - highBlockStart);
   }
-  // At least two blocks, so do the left and righ.
-  const std::size_t leftIndex = lowBlockStart + leafRMQs_[lowBlock]->rmq(low - lowBlockStart, leafRMQs_[lowBlock]->size());
-  const std::size_t rightIndex = highBlockStart + leafRMQs_[highBlock]->rmq(0, high - highBlockStart);
+  // At least two blocks, so do the left and right.
+  const std::size_t leftIndex = lowBlockStart + leafRMQs_.at(lowBlock)->rmq(low - lowBlockStart, leafRMQs_[lowBlock]->size());
+  const std::size_t rightIndex = highBlockStart + leafRMQs_.at(highBlock)->rmq(0, high - highBlockStart);
   if (highBlock - lowBlock == 1) {
     // Exactly two blocks, so just return the minimum.
     return (elems_[leftIndex] < elems_[rightIndex]) ? leftIndex : rightIndex;
@@ -117,8 +108,5 @@ std::size_t FischerHeunRMQ::rmq(std::size_t low, std::size_t high) const {
   if (*rootIndex < elems_[leftIndex] && *rootIndex < elems_[rightIndex]) {
     return rootIndex - elems_;
   }
-  if (elems_[leftIndex] < elems_[rightIndex]) {
-    return leftIndex;
-  }
-  return rightIndex;
+  return (elems_[leftIndex] < elems_[rightIndex]) ? leftIndex : rightIndex;
 }

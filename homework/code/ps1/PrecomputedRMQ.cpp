@@ -59,7 +59,9 @@ PrecomputedRMQ::PrecomputedRMQ(const RMQEntry* elems, std::size_t numElems)
     for (std::size_t i = 0; i < (numElems - size + 1); ++i) {
       const RMQEntry* left_range = precomputed_rmq_[prevSizeStartIndex + i];
       const RMQEntry* right_range = precomputed_rmq_[prevSizeStartIndex + i + 1];
-      const RMQEntry* minimum = (*left_range < *right_range) ? left_range : right_range;
+      // It's very important (in terms of cartesian tree numbers) that we always take the
+      // first value.
+      const RMQEntry* minimum = (*left_range <= *right_range) ? left_range : right_range;
       precomputed_rmq_[currSizeStartIndex + i] = minimum;
     }
     prevSizeStartIndex = currSizeStartIndex;
