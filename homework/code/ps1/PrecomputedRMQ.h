@@ -40,6 +40,9 @@ public:
    */
   std::size_t rmq(std::size_t low, std::size_t high) const;
 
+  /* Returns the number of elements stored in this RMQ */
+  std::size_t size() const;
+
 private:
   // Computes the index into our flat memory representation to solve CRMQ(size,i).
   // See comments in .cpp for more details.

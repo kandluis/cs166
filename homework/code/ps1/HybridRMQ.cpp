@@ -4,33 +4,25 @@
 
 #include <math.h>  // Needed for log, ceil functions.
 
-namespace {
-template <class A, class B>
-inline bool max(A&& a, B&& b) {
-  return (a < b) ? b : a;
-}
-}
-
 HybridRMQ::HybridRMQ(const RMQEntry* elems, std::size_t numElems) : elems_(elems), numElems_(numElems)
-  // To avoid crashes. Though we only do non-trivial work when numElems > 16.
+  // To avoid crashes. Though we only do non-trivial work when numElems >= 2.
   , blockSize_(ceil(sqrt(numElems)))
   // We have an extra block when numElems is not divisible by block-size.
   ,numBlocks_(numElems / blockSize_ + (numElems % blockSize_ != 0)) {
   // No work to be done.  
   if (numElems_ < 2) return;
 
-  blockMinimums_.resize(numBlocks_);
-  blockMinimumsIndex_.resize(numBlocks_);
-  for (std::size_t i = 0, blockIndex = -1; i < numElems; i++) {
+  blockMinimums_.reserve(numBlocks_);
+  blockMinimumsIndex_.reserve(numBlocks_);
+  for (std::size_t i = 0; i < numElems; i++) {
     // Starting a new block.
     if (i % blockSize_ == 0) {
-      blockIndex++;
-      blockMinimums_[blockIndex] = elems[i];
-      blockMinimumsIndex_[blockIndex] = (elems + i);
+      blockMinimums_.push_back(elems[i]);
+      blockMinimumsIndex_.push_back(elems + i);
     }
-    if (elems[i] < blockMinimums_[blockIndex]) {
-      blockMinimums_[blockIndex] = elems[i];
-      blockMinimumsIndex_[blockIndex] = (elems + i);
+    if (elems[i] < blockMinimums_.back()) {
+      blockMinimums_.back() = elems[i];
+      blockMinimumsIndex_.back() = (elems + i);
     }
   }
   rootRMQ_ = std::make_unique<SparseTableRMQ>(&blockMinimums_[0], blockMinimums_.size());

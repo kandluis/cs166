@@ -35,6 +35,10 @@ inline std::size_t PrecomputedRMQ::index(std::size_t size, std::size_t i) const 
   return (size - 1) * (2 * numElems_ - size + 2) / 2 + i;
 }
 
+std::size_t PrecomputedRMQ::size() const {
+  return numElems_;
+}
+
 PrecomputedRMQ::PrecomputedRMQ(const RMQEntry* elems, std::size_t numElems)
   : elems_(elems), numElems_(numElems) {
   // Pre-allocate a big block of size n(n+1)/2.
