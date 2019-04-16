@@ -17,6 +17,7 @@
 #include "HybridRMQ.h"
 
 #include <cstddef> // Needed for std::size_t
+#include <memory>  // unique_ptr
 
 
 // We're not sure what the workload will look like, so we make a few heuristic

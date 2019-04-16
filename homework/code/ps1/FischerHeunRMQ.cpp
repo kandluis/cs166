@@ -4,6 +4,7 @@
 #include "PrecomputedRMQ.h"
 
 #include <math.h>  // Needed for log, ceil functions.
+#include <memory>  // unique_ptr
 
 namespace {
 // Computes the Cartesian number 

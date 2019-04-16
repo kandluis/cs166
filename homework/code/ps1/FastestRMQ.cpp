@@ -1,5 +1,10 @@
 #include "FastestRMQ.h"
 
+#include "FischerHeunRMQ.h"
+#include "HybridRMQ.h"
+
+#include <memory>  // unique_ptr
+
 FastestRMQ::FastestRMQ(const RMQEntry* elems, std::size_t numElems) : elems_(elems), numElems_(numElems) {
   // We actually don't do any pre-processing until we-know we'll be hitting a lot of queries.
   // For a small number of queries, we just want to do them directly.

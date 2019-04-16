@@ -3,6 +3,7 @@
 #include "SparseTableRMQ.h"  // Needed for SparseTableRMQ.
 
 #include <math.h>  // Needed for log, ceil functions.
+#include <memory>  // unique_ptr
 
 HybridRMQ::HybridRMQ(const RMQEntry* elems, std::size_t numElems) : elems_(elems), numElems_(numElems)
   // To avoid crashes. Though we only do non-trivial work when numElems >= 2.

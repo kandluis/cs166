@@ -13,6 +13,7 @@
 #include "SparseTableRMQ.h"
 
 #include <vector>
+#include <memory>  // unique_ptr
 
 class FischerHeunRMQ {
 public:

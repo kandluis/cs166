@@ -12,6 +12,7 @@
 #include "SparseTableRMQ.h"
 
 #include <cstddef> // Needed for std::size_t
+#include <memory>  // unique_ptr
 
 class HybridRMQ {
 public:
