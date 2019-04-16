@@ -17,8 +17,8 @@ FastestRMQ::~FastestRMQ() {
 std::size_t FastestRMQ::rmq(std::size_t low, std::size_t high) const {
   if (!havePreprocessed_) {
     processedWithoutPreprocessing_ += high - low + 1;
-    if ((numElems_ > kMediumWorkloadLimit && processedWithoutPreprocessing_ > 10 * numElems_) ||
-        (numElems_ <= kMediumWorkloadLimit && processedWithoutPreprocessing_ > numElems_)) {
+    if ((numElems_ > kMediumWorkloadLimit && processedWithoutPreprocessing_ > 3 * numElems_) ||
+        (numElems_ <= kMediumWorkloadLimit && processedWithoutPreprocessing_ > 2 * numElems_)) {
       havePreprocessed_ = true;
       if (numElems_ > kMediumWorkloadLimit) {
         fischerHeunRMQ_ = std::make_unique<FischerHeunRMQ>(elems_, numElems_);

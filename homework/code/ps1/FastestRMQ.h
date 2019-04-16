@@ -86,7 +86,7 @@ private:
   // The block-size of hybrid is ~ceil(sqrt(numElems). Once this gets above
   // our L2 cache, we probably want a bigger data structure.
   // 100,000 is actually quite low.
-  static constexpr std::size_t kMediumWorkloadLimit = 100000;
+  static constexpr std::size_t kMediumWorkloadLimit = 10000;
   // Pre-processing time is O(n).
   mutable std::unique_ptr<FischerHeunRMQ> fischerHeunRMQ_;
 
