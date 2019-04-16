@@ -178,44 +178,24 @@ Design an $\bigo{n}$-time algorithm for this problem, where $n$ is the number of
 
 \begin{solution}
 \textbf{Overview}
+For simplicity, we assume that all of the rectangles are distinct heights. Therefore, given heights $h_i$ for the $n$ rectangles, we have that $h_i \neq h_j, i \neq j$. We also have that $h_i \geq 0$ for all $0 \leq i < n$. The problem them boils down to finding a fast way to compute the area of all boxes and returning the maximum. We do this my considering all boxes of a given height $h$, and finding the box with the largest width (as this box has the largest area). Then, we simply iterate over this set of values and return the maximum, which corresponds the area of the largest box.
 
-The key insight into this problem is that increasing the height or increasing the width of a box always lead to a box with higher area. Then we note that there exists at least one box of height equal to some rectangle (trivially, this is the box containing just that rectangle). As such, we can break the problem into (1) for each possible height, find the largest area of all boxes of that height and (2) out of those heights, find the largest area. At first this seems like a lot of work, but using RMQ, this process is actually contant time.
+\textbf{Algorithm}
+For an array of heights $H$, we first construct and RMQ structure on this array (by processing the array).
 
-Next, we can be smart about how we approach this. For example, we consider the heights in increasing order. That is, find all boxes containing the smallest rectangle, and from those boxes, find the largest area. Trivially, the largest area in this case is simply the box spanning the entire range.
+We then use this RMQ to calculate $k = \text{RMQ}(0,n-1)$. We store $A[k] \leftarrow H[k] * n$. We then proceed to repeat this process on the left side $H[0, \cdots k -1 ]$ and right side $H[k + 1, \cdots n -1 ]$ arrays (if they exist). More precisely, for the subarray $H[i, \cdots, j]$, we compute $k = \text{RMQ}(i, j)$ and compute and store the value $A[k] = \leftarrow H[k] * (j - i + 1)$. 
 
-We now have the final insight. Any box of higher height \textit{cannot} contain the minimum. This means that our minimum essentially splits the skyline into two parts, a left and a right. We can treat each of these as subproblems, and repeat the process. In this way, for each height, we will obtain the area of the largest box of that height. Then we simply return the maximum of these values.
-
-\textbf{Representation}
-We assume the skyline is given simple as an array $A$ of integers. From the problem statement, this array is of size $n$ and contains only distinct values (no two skylines are the same height). Furthermore, $A[i]$ corresponds the the height of the $i$-th rectangle, from left-to-right, on the skyline.
-
-Our algorithm will rely on using RMQs, and as such, we create an RMQ data structure which we call RMQ$_A$.
-
-We will also keep an auxilary data structure, \textit{largestAreaForBoxOfHeight} which is of size $n$, and where \textit{largestAreaForBoxOfHeight}$[i]$ will store the area of the largest box for our skyline whose height is equal to the height of the $i$-th rectangle. For example, \textit{largestAreaForBoxOfHeight}$[0]$ has the largest area of a box whose height is equal to that of the $0$-th rectangle. 
-
-\textbf{Algorithm Details}
-We first construct RMQ$_A$. We note that, using the Fischer-Heun algorithm, this data structure can be constructed in $\bigo{n}$ time. We further note that we can query it for the index of the minimum value in any range $[i,j]$ in $\bigo{1}$ time.
-
-We describe our algorith as working on a subarray, $A[i,\cdots,j]$. We can imagine it begins with $i = 0, j = n -1$. For this subarray, first, we find the index of the minimum value contained in the subarray using our pre-computed RMQ$_A$. Let this index be $k$. In other words, $A[k] < A[l], \forall i \leq l \leq j$. We then compute $A[k] * (i - j + 1)$ and set this as the value for \textit{largestAreaForBoxOfHeight}$[k]$. 
-
-We simply repeat the above process on the subarrays $A[i, \cdots, k-1]$ and $A[k + 1, \cdots j]$ (as long as these subarrays contain at least one-element, otherwise we stop since there is no valid subarray).
-
-In the end, the algorithm simply returns the maximum value found in \textit{largestAreaForBoxOfHeight} as the answer.
+Finally, we compute the maximum of the $A[i]$ and return this value.
 
 \textbf{Proof of Correctness}
-TODO.
+We can see that $k = RMQ(i, j)$ gives us the index of the minimum rectangle in a subarray. It is then clear that the maximum area of a box contained entirely withing this subarray and whose height is $H[k]$ is $H[k] * (i-j+1)$, since the box can just span the entire range. Furthermore, (1) any box of smaller height will then have smaller area (since it can at most span the entire array), and (2) any box of larger height cannot contain the rectangle at index $k$, since if it did, it's height would have to be at most $H[k]$, a contradiction.
 
-\textbf{Analysis of Runtime}
-The run-time analysis is rather straight-forward. Constructing the RMQ data-structure, as discussed in class, takes $\bigo{n}$ time.
+As such, for each distinct height, we've computed the area of the largest box \textit{of that height}. Our algorithm then simply takes the maximum of these values, and as such, must in-fact return the area of the largest box \textit{of any height}, which is what we wanted.
 
-Next, we note that for each element that we add to \textit{largestAreaForBoxOfHeight}, we perform a single RMQ query, which takes $\bigo{1}$ times. 
+\textbf{Runtime Analysis}
+The run-time analysis is straight-forward. Using the Fischer-Heun RMQ data-structure, the RMQ structure can be constructed in $O(n)$ time. Next, we note that each height has a one-to-one correspondance with a single RMQ query on our data structure. There are $O(n)$ distinct height, and as such, our algorithm performs $O(n)$ RMQ queries, each of constant time. Lastly, compute the maximum of $A$ takes $O(n)$ times since, again, there are $O(n)$ heights.
 
-Next, we note that we never set a particular index of \textit{largestAreaForBoxOfHeight} more than once, since once an index is set, the algorithm continues but on the two subarrays \textbf{not} containing that index. As such, we can repeat this process at most $\bigo{n}$ times before the algorithm finishes.
-
-Finally, we note that finding the maximum element in \textit{largestAreaForBoxOfHeight} takes $\bigo{n}$ time. 
-
-Putting it all together, our algorithm runes in $\bigo{n} + \bigo{n} * \bigo{1} + \bigo{n} = \bigo{n}$, as desired.
-
-
+The total run-time of our algorithm is therefore $O(n)$.
 
 \end{solution}
 
@@ -253,15 +233,66 @@ For the purposes of this problem, let $m$ denote the number of rows in $A$ and $
 \begin{solution}
 \textbf{Overview}
 
-The key insight into this data structure is that we can decompose the AMQ problem into multiple RMQ problems. To be more precise, an area minimum query consists of first finding the minimum along the rows/columns, and then taking the minimum of this result.
+The key insight into this data structure is that we can decompose the AMQ problem into multiple RMQ problems (WLOG, we define RMQ and AMQ as both returning the value, not the index). To be more precise, an area minimum query consists of first finding the minimum along each row/column, and then computing the minimum of these values. We can do this by making use of the Fischer-Heun RMQ, which is a $\RMQcomplexity{\bigo{n}}{\bigo{1}}$-time.
 
-\textbf{}
+\textbf{Pre-Processing}
+Given a two-dimensional array $A$ of size $n \times m$, we will construct $\min\{n,m\}$ RMQs (1-dimensional) data structures, one for each row (or column, if there are less columns than rows). Constructing each of the $\bigo{\min\{n,m\}}$ $RMQs$ takes $\bigo{\max\{n,m\}}$, for a total pre-processing time of $\bigo{nm}$. We store these RMQs in an array indexed by their row/column index as RMQ$_k$.
+
+\textbf{Querying}
+WLOG, we consider the case where $n \geq m$ (there are more columns than rows). The logic is equivalent with the roles of rows/columns swapped in when $m > n$. Therefore, when computing $AMQ((i,j), (k, l))$, we lookup the RMQ$_r$ corresponding to the row range $[i, \cdots, k]$. For each of $i \leq r \leq k$, we find $v_r = \text{RMQ}_r(j, l)$ (the minimum of the row). This takes $\bigo{1}$ per row, with a total of $\bigo{n}$ rows. We then compute the minimum of all computed $v_r$, and return this value, which takes $\bigo{n}$. More generally, the query time is $\bigo{\min\{n,m\}}$.
+
+\textbf{Correctness}
+Correctness follows directly from the correctness of RMQ. The minimum of an area is minimum of the minimum of each row/column.
+
+\textbf{Runtime}
+As argued above, the pre-processing time is $\bigo{nm}$ and the query time is $\bigo{\min{n,m}}$. This means this is a $\RMQcomplexity{\bigo{mn}}{\bigo{\min\{m, n\}}}$-time data structure for AMQ.
+
+
 \end{solution}
 
 \part Design and describe an $\RMQcomplexity{\bigo{mn \log m \log n}}{\bigo{1}}$-time data structure for AMQ.
 
 \begin{solution}
-Your solution goes here!
+\textbf{Overview}
+
+This solution is very similar to the sparse-table for the traditional RMQ problem. The key insight is that we can answer $AMQ((i,j), (k,l))$ using the answers to four AMQs each consisting of the four quadrants making up the box $(i,j) -> (k,l)$. To be more precise, letting $r = k - i + 1$ and $c = l - j + 1$, if we know the answers to $AMQ((i,j), (i + r/2, j + c/2))$, $AMQ((i + r/2 + 1, j), (i + r, j + c/2))$, $AMQ((i,j + c/2 + 1), (i + r/2, j + c))$, and $AMQ((i+r/2 + 1,j + c/2 + 1), (i + r, j + c))$, the answer to the original problem is simply the minimum of these four values.
+
+With the above intuition, we can pre-compute a sparse-table containing answers to AMQs with top-left corner $(i,j)$ of dimension $2^p, 2^q$ for all powers of 2. This means that we can directly look up the answers to $AMQ((i,j), (i + 2^p, j + 2^q))$.
+
+\textbf{Pre-Processing}
+Similar to the sparse-table RMQ, we can pre-process our sparse-table using dynamic programming. We begin by computing all AMQs of dimension $(2^0, 2^0)$ (this is just $A[i,j]$ for each $(i,j)$). For the iteration, given that we've pre-computed all AMQs of dimension $(2^p, 2^q)$, we can compute all AMQs for dimensions $(2^{p+1}, 2^q), (2^p, 2^{q+1})$, and $(2^{p+1}, 2^{q+1})$ using the following relationships:
+
+\begin{align*}
+  AMQ((i,j), (i + 2^{p+1}, j + 2^q)) &= \min
+    \begin{cases} 
+      AMQ((i, j), (i + 2^p, j + 2^q)) \\
+      AMQ((i + 2^p + 1, j), (i + 2^{p+1}, j + 2^q))
+    \end{cases} \\
+  AMQ((i,j), (i + 2^p, j + 2^{q+1})) &= \min
+    \begin{cases} 
+      AMQ((i, j), (i + 2^p, j + 2^q)) \\
+      AMQ((i, j + 2^q + 1), (i + 2^p, j + 2^{q+1}))
+    \end{cases} \\
+  AMQ((i,j), (i + 2^{p+1}, j + 2^{q+1})) &= \min 
+    \begin{cases}
+      AMQ((i, j), (i + 2^p, j + 2^q))\\
+      AMQ((i + 2^p + 1, j), (i + 2^{p+1}, j + 2^q))\\
+      AMQ((i, j + 2^q + 1), (i + 2^p, j+2^{q+1}))\\
+      AMQ((i + 2^{p} + 1, j + 2^{q} + 1),(i + 2^p, j + 2^q))
+    \end{cases}
+\end{align*}
+There are $\bigo{nm}$ top-left corners, and for each of these corners, we compute all AMQs of dimensions $(2^p, 2^q)$ for $0 \leq p < n, 0 \leq q < m$, for a total of $\bigo{\log n \log m}$ dimensions. With the above formulation using dynamic programming, this will take time $\bigo{mn \log m \log n}$.
+
+\textbf{Querying}
+Given $AMQ((i,j), (k,l))$, we first find the largest $p$ and largest $q$ such that $2^p \leq i - k + 1$ and $2^q \leq l - j + 1$. We can do this in time $\bigo{1}$ by pre-computing these values in the pre-processing step (takes $\bigo{\log n + \log m}$ time). Then we note that the square defined by $[(i,j), (k,l)]$ can be formed as the overlap of four squares (1) top-left: $[(i,j), (i + 2^p, j + 2^q)]$, (2) bottom-right:, $[(k - 2^p + 1, l - 2^q + 1), (k,l)]$, (3) top-right $[(i, l - 2^q + 1), (k - 2^p, l)]$ and, (4) bottom-left $[(k - 2^p + 1, j), (k, l - 2^q)]$. Since the ranges have dimensions which are powers of 2, they can be looked up in $\bigo{1}$-time. We then return the minimum value.
+
+\textbf{Correctness}
+Correctness follows from the fact that a larger square can be decomposed into four overlapping squares whose width is at least half the original and whose height is at least half the original. This is precisely when our algorithm does.
+
+\textbf{Runtime}
+As argued above, the pre-processing time is $\bigo{mn \log m \log n}$ and the query time is $\bigo{1}$. This means this is a $\RMQcomplexity{\bigo{mn\log m \log n}}{\bigo{1}}$-time data structure for AMQ.
+
+
 \end{solution}
 
 \end{parts}
@@ -290,7 +321,32 @@ This question explores these sorts of repeated logarithms in the context of rang
 structures as $D_k$.
 
 \begin{solution}
-Your solution goes here!
+We use the hybrid framework from class. We recall than in the hybrid framework, the time complexity is given by $\RMQcomplexity{\bigo{n + p_1(n / b) + (n / b) p_2(b)}}{\bigo{q_1(n / b) + q_2(b)}}$ where the time complexity of our root RMQ is $\RMQcomplexity{\bigo{p_1(n)}}{\bigo{q_1(n)}}$ and the time complexity of our leaf RMQ is $\RMQcomplexity{\bigo{p_2(n)}}{\bigo{q_2(n)}}$.
+
+We show that for any fixed $k \geq 1$, there is an RMQ data structure, $D_k$, with time complexity $\RMQcomplexity{\bigo{n \log^{(k)} n}}{\bigo{1}}$. We do this by induction on $k$ using a constructive proof (we show what this data structure looks like).
+
+For the base case, we being with $k = 1$. In this case, we simple use the sparse table RMQ, which we've shown in class has time-complexity $\RMQcomplexity{\bigo{n \log n}}{\bigo{1}}$. 
+
+Let us now begin the induction. Suppose we have access to $D_k$ (and RMQ data structure with time complexity $\RMQcomplexity{\bigo{n \log^{(k)} n}}{\bigo{1}}$). Then to construct $D_{k+1}$, simply use the hybrid-framework with $D_k$ for the summary and leaf RMQs and with block size $b = \log n$.
+
+The pre-processing time is then given by:
+\begin{align*}
+  \bigo{n + p_1(n / b) + (n / b) p_2(b)} &= \bigo{n + (n/b) \log^{(k)} (n / b) + (n/b)b \log^{(k)} b } \tag{By our inductive hypothesis about $D_k$} \\
+  &= \bigo{n + n/b \log n + n \log^{(k)} b} \tag{Simplifying using $\log^{(k)}(n/b) = \bigo{\log n}$} \\
+  &= \bigo{n + n/(\log n) \log n + n \log^{(k)} \log n} \tag{Subtituting our choise of $b = \log n$}  \\
+  &= \bigo{n + n + n \log^{(k + 1)} n} \tag{Using definition of $\log^{(k)}$} \\
+  &= \bigo{n \log^{(k+1)} n}
+\end{align*}
+
+The query-time is given by:
+\begin{align*}
+  \bigo{q_1(n / b) + q_2(b)} &= \bigo{1}
+\end{align*}
+
+As such, we have just constructed $D_{k+1}$ using $D_k$ which has time complexity
+$\RMQcomplexity{\bigo{n \log^{(k + 1)} n}}{\bigo{1}}$. Therefore, we have now show that for any $k \geq 1$, $D_k$ exists and has the desired time-complexity. 
+
+
 \end{solution}
 
 (Yes, we know that the Fischer-Heun structure is a $\RMQcomplexity{\bigo{n}}{\bigo{1}}$ solution to RMQ and therefore technically meets these requirements. But for the purposes of this question, let's imagine that you didn't know that such a structure existed and were instead curious to see how fast an RMQ structure you could make without resorting to the Method of Four Russians. \smiley)
@@ -298,7 +354,7 @@ Your solution goes here!
 \part Although every $D_k$ data structure has query time $\bigo{1}$, the query times on the $D_k$ structures will increase as k increases. Explain why this is the case and why this doesn't contradict your result from part (i).
 
 \begin{solution}
-Your solution goes here!
+Let us normalize such that the query-time for $D_1$ is $t_D(1) = 1$ time unit. Then with our hybrid framework, $D_2$ requires three queries on $D_1$ for a single $D_2$ query. That is to say, the $t_D(2) = 3t(1)$. In fact, $D_k$ is constructed such that $t_D(k) = 3 t_D(k - 1)$. This means that the query-time is in fact $\bigo{3^k}$ (it grows exponentially with $k$). However, this does not contradict our $\bigo{1}$ query time from above since $k$ is not a function of $n$, and as such, does not grow with our input array. For the purposes of this problem, $k$ is a constant, so $\bigo{3^k} = \bigo{1}$,
 \end{solution}
 
 \end{parts}

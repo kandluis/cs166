@@ -1,4 +1,4 @@
-CXXFLAGS = --std=c++17 -Wall -Werror -Wpedantic -O0 -g
+CXXFLAGS = --std=c++17 -Wall -Werror -Wpedantic -O3 -g
 CXX = g++
 
 OBJECTS = FastestRMQ.o FischerHeunRMQ.o HybridRMQ.o PrecomputedRMQ.o SparseTableRMQ.o SegmentTreeRMQ.o

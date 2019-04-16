@@ -1,22 +1,40 @@
 #include "FastestRMQ.h"
 
-FastestRMQ::FastestRMQ(const RMQEntry* elems, std::size_t numElems) {
-  /* TODO: Delete this line, the lines after this one, and implement
-   * this function.
-   */
-  (void) elems;
-  (void) numElems;
+FastestRMQ::FastestRMQ(const RMQEntry* elems, std::size_t numElems) : elems_(elems), numElems_(numElems) {
+  // We actually don't do any pre-processing until we-know we'll be hitting a lot of queries.
+  // For a small number of queries, we just want to do them directly.
 }
 
 FastestRMQ::~FastestRMQ() {
-  /* TODO: Delete this comment and implement this function. */
+  // Noting to free.
 }
 
 std::size_t FastestRMQ::rmq(std::size_t low, std::size_t high) const {
-  /* TODO: Delete this line, the lines after this one, and implement
-   * this function.
-   */
-  (void) low;
-  (void) high;
-  return 0;
+  if (!havePreprocessed_) {
+    processedWithoutPreprocessing_ += high - low + 1;
+    if ((numElems_ > kMediumWorkloadLimit && processedWithoutPreprocessing_ > 10 * numElems_) ||
+        (numElems_ <= kMediumWorkloadLimit && processedWithoutPreprocessing_ > numElems_)) {
+      havePreprocessed_ = true;
+      if (numElems_ > kMediumWorkloadLimit) {
+        fischerHeunRMQ_ = std::make_unique<FischerHeunRMQ>(elems_, numElems_);
+      } else {
+        hybridRMQ_ = std::make_unique<HybridRMQ>(elems_, numElems_);
+      }
+      // Call yourself again to use the pre-processed versions.
+      return rmq(low, high);
+    }
+    const RMQEntry* min = elems_ + low;
+    for (std::size_t i = low + 1; i < high; i++) {
+      if (elems_[i] < *min) {
+        min = (elems_ + i);
+      }
+    }
+    return min - elems_;
+  }
+
+  // Use the pre-processed version.
+  if (fischerHeunRMQ_ == nullptr) {
+    return hybridRMQ_->rmq(low, high);
+  } 
+  return fischerHeunRMQ_->rmq(low, high);
 }
