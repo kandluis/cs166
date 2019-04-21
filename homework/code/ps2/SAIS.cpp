@@ -222,18 +222,24 @@ std::vector<std::size_t> ReorderUsingIndeces(
 std::optional<SuffixArray> MaybeSuffixArray(
   const std::vector<std::size_t>& text) {
   std::vector<std::size_t> charCount(text.size());
-  std::vector<std::size_t> charIndeces(text.size());
+  // A map from character to index in the text.
+  std::vector<std::size_t> charIndexes(text.size());
   for (std::size_t charIdx = 0; charIdx < text.size(); charIdx++) {
     const std::size_t character = text[charIdx];
     if (charCount[character] == 0) {
       charCount[character]++;
-      charIndeces[character] = charIdx;
+      charIndexes[character] = charIdx;
     } else {
       // We ran into a character multiple times. We can no longer do simple way.
       return std::nullopt;
     }
   }
-  return ReorderUsingIndeces(text, charIndeces);
+  std::vector<std::size_t> indeces;
+  indeces.reserve(text.size());
+  for (std::size_t i = 0; i < text.size(); i++) {
+    indeces.push_back(i);
+  }
+  return ReorderUsingIndeces(indeces, charIndexes);
 }
 
 
