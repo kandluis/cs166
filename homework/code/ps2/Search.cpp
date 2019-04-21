@@ -1,12 +1,124 @@
 #include "Search.h"
-using namespace std;
 
-vector<size_t> searchFor(const string& pattern,
-                         const string& text,
-                         const SuffixArray& suffixArr) {
-  /* TODO: Implement this! */
-  (void) pattern;
-  (void) text;
-  (void) suffixArr;
-  return {};
+#include <optional>
+
+namespace {
+
+// Returns true if 'prefix' is fully contained as a prefix of 'text'.
+bool IsPrefix(const std::string_view text, const std::string_view prefix) {
+  if (text.size() < prefix.size()) {
+    return false;
+  }
+  for (std::size_t i = 0; i < prefix.size(); i++) {
+    if (prefix[i] != text[i]) return false;
+  }
+  return true;
+}
+
+// Finds the index of the smallest suffix matching pattern.
+// [startIndex, endIndex) is a half-open interval. Returns std::nullopt
+// if no suffixes match pattern
+std::optional<std::size_t> binarySearchSmallest(
+  const std::string& pattern,
+  const std::string& text,
+  const SuffixArray& suffixArr,
+  const std::size_t startIndex, const std::size_t endIndex) {
+  if (startIndex >= endIndex) {
+    return std::nullopt;
+  }
+  const auto recurse = [&](const std::size_t start, const std::size_t end) {
+    return binarySearchSmallest(pattern, text, suffixArr, start, end);
+  };
+  const std::size_t midpoint = (startIndex + endIndex) / 2;
+  const std::string_view suffix = text.substr(suffixArr[midpoint]);
+  const int result = suffix.compare(pattern);
+  // Pattern matches suffix exactly. This is the smallest such match.
+  if (result == 0) {
+    return midpoint;
+  }
+  // Either no match and 'suffix' is smaller, or match but 'suffix'
+  // is shorter than 'pattern'. Either way, not a prefix match.
+  // We search the right side of the array.
+  if (result < 0) {
+    return recurse(midpoint + 1, endIndex);
+  }
+  // Match, where 'pattern' is a prefix of 'suffix'.
+  if (IsPrefix(suffix, pattern)) {
+    // Try to find a 'smaller' match on the left hand side.
+    if (const auto maybeSmaller = recurse(startIndex, midpoint)) {
+      return *maybeSmaller;
+    }
+    return midpoint;
+  }
+  // Not a match. 'suffix' is larger. Check the LHS.
+  return recurse(startIndex, midpoint);
+}
+
+// Same as above but finds the largest matching suffix.
+std::optional<std::size_t> binarySearchLargest(
+  const std::string& pattern,
+  const std::string& text,
+  const SuffixArray& suffixArr,
+  const std::size_t startIndex, const std::size_t endIndex) {
+  if (startIndex >= endIndex) {
+    return std::nullopt;
+  }
+  const auto recurse = [&](const std::size_t start, const std::size_t end) {
+    return binarySearchLargest(pattern, text, suffixArr, start, end);
+  };
+  const std::size_t midpoint = (startIndex + endIndex) / 2;
+  const std::string_view suffix = text.substr(suffixArr[midpoint]);
+  const int result = suffix.compare(pattern);
+  // Pattern matches suffix exactly.
+  if (result == 0) {
+    // Try to find a larger suffix which also matches.
+    if (const auto maybeLarger = recurse(midpoint + 1, endIndex)) {
+      return *maybeLarger;
+    }
+    return midpoint;
+  }
+  // Either no match and 'suffix' is smaller, or match but 'suffix'
+  // is shorter than 'pattern'. Either way, not a prefix match.
+  // We search the right side of the array.
+  if (result < 0) {
+    return recurse(midpoint + 1, endIndex);
+  }
+  // Match, where 'pattern' is a prefix of 'suffix'.
+  if (IsPrefix(suffix, pattern)) {
+    // Try to find a 'larger' match on the right hand side.
+    if (const auto maybeLarger = recurse(midpoint + 1, endIndex)) {
+      return *maybeLarger;
+    }
+    return midpoint;
+  }
+  // Not a match. 'suffix' is larger. Check the LHS.
+  return recurse(startIndex, midpoint);
+}
+
+
+}  // namespace
+
+
+std::vector<std::size_t> searchFor(const std::string& pattern,
+                                   const std::string& text,
+                                   const SuffixArray& suffixArr) {
+
+  const auto maybeSmallestSuffix = binarySearchSmallest(
+                                    pattern, text, suffixArr, 0,
+                                    suffixArr.size());
+  if (!maybeSmallestSuffix) {
+    // Nothing matches the pattern.
+    return {};
+  }
+  const std::size_t smallestSuffix = *maybeSmallestSuffix;
+  // If a smallest exist, a largest must too (worst case, they are the same value).
+  const std::size_t largestSuffix = binarySearchLargest(
+                                     pattern, text, suffixArr, 0,
+                                     suffixArr.size()).value();
+  std::vector<std::size_t> indeces;
+  indeces.reserve(largestSuffix - smallestSuffix + 1);
+  for (std::size_t i = smallestSuffix; i <= largestSuffix; i++) {
+    indeces.push_back(suffixArr[i]);
+  }
+  return indeces;
 }

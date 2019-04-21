@@ -1,8 +1,6 @@
 #include "SAIS.h"
-#include "DC3.h"
 
 #include <optional>
-#include <iostream>
 
 namespace {
 // Enum defining the possible tags for a given suffix.
