@@ -85,7 +85,7 @@ std::vector<Interval> CreateSuffixBuckets(const std::vector<std::size_t> text) {
   for (std::size_t suffixIdx = 0; suffixIdx < text.size(); suffixIdx++) {
     const std::size_t suffixStartChar = text[suffixIdx];
     charCount[suffixStartChar]++;
-    if (!firstOccurrence[suffixStartChar].has_value()) {
+    if (!firstOccurrence[suffixStartChar]) {
       firstOccurrence[suffixStartChar] = suffixIdx;
     }
   }
@@ -164,8 +164,6 @@ std::vector<std::size_t> ExtractLMSIndexes(const std::vector<Suffix>& input) {
 std::vector<std::size_t> formReducedString(
   const std::vector<std::size_t>& text, const std::vector<Suffix>& suffixes,
   const SuffixArray& pSuffixArray) {
-  // The sentinal is always the first LSM suffix.
-  assert(pSuffixArray[0] == text.size() - 1 && suffixes[pSuffixArray[0]].isLMS);
   // The index into 'text' corresponding to the current block.
   std::size_t currBlockTextIdx = pSuffixArray[0];
   // blockIndexes[i] is none null if text[i:] is an LMS suffix. The value of
@@ -204,7 +202,7 @@ std::vector<std::size_t> formReducedString(
   // We can now use blockIndex to construct the reduced string.
   std::vector<std::size_t> reducedString;
   for (const optional<std::size_t> blockIndex : blockIndexes) {
-    if (blockIndex.has_value()) {
+    if (blockIndex) {
       reducedString.push_back(blockIndex.value());
     }
   }
@@ -215,7 +213,6 @@ std::vector<std::size_t> formReducedString(
 std::vector<std::size_t> ReorderUsingIndeces(
   const std::vector<std::size_t>& values,
   const std::vector<std::size_t>& index) {
-  assert(values.size() == index.size());
   std::vector<std::size_t> output(values.size());
   for (std::size_t i = 0; i < index.size(); i++) {
     output[i] = values[index[i]];
@@ -267,10 +264,8 @@ SuffixArray sais(const std::vector<std::size_t>& text) {
   // Step One: Annotate each character and find the LMS characters
   const std::vector<Suffix> suffixes = TagText(text);
   const std::vector<std::size_t> lmsIndexes = ExtractLMSIndexes(suffixes);
-  assert(suffixes.size() == text.size());
   // Step Two: First induced sorting to get LMS-Blocks in order.
   const SuffixArray pSuffixArray = InducedSorting(text, suffixes, lmsIndexes);
-  assert(text.size() == pSuffixArray.size());
   // Step Three: Using the block-sorted suffix array, find the reduced string.
   const std::vector<std::size_t> reducedString = formReducedString(
         text, suffixes, pSuffixArray);
