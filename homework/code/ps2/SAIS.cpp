@@ -81,7 +81,7 @@ std::vector<Interval> CreateSuffixBuckets(const std::vector<std::size_t> text) {
   // Since text is rank-order, there are text.size() (at most) characters.
   std::vector<std::size_t> charCount(text.size());
   // This maps from character to the first occurrence in the string.
-  std::vector<std::optional<std::size_t>> firstOccurrence(text.size());
+  std::vector<optional<std::size_t>> firstOccurrence(text.size());
   for (std::size_t suffixIdx = 0; suffixIdx < text.size(); suffixIdx++) {
     const std::size_t suffixStartChar = text[suffixIdx];
     charCount[suffixStartChar]++;
@@ -170,7 +170,7 @@ std::vector<std::size_t> formReducedString(
   std::size_t currBlockTextIdx = pSuffixArray[0];
   // blockIndexes[i] is none null if text[i:] is an LMS suffix. The value of
   // blockIndexes[i] in that case is the index of the corresponding LMS block.
-  std::vector<std::optional<std::size_t>> blockIndexes(text.size());
+  std::vector<optional<std::size_t>> blockIndexes(text.size());
   blockIndexes[currBlockTextIdx] = 0;
   for (std::size_t pSuffixIdx = 1; pSuffixIdx < pSuffixArray.size(); pSuffixIdx++) {
     const std::size_t suffixIdx = pSuffixArray[pSuffixIdx];
@@ -203,7 +203,7 @@ std::vector<std::size_t> formReducedString(
 
   // We can now use blockIndex to construct the reduced string.
   std::vector<std::size_t> reducedString;
-  for (const std::optional<std::size_t> blockIndex : blockIndexes) {
+  for (const optional<std::size_t> blockIndex : blockIndexes) {
     if (blockIndex.has_value()) {
       reducedString.push_back(blockIndex.value());
     }
@@ -225,7 +225,7 @@ std::vector<std::size_t> ReorderUsingIndeces(
 
 // When the 'text' contains only unique characters, we can construct the
 // suffix array directly without any complicated methodoloy.
-std::optional<SuffixArray> MaybeSuffixArray(
+optional<SuffixArray> MaybeSuffixArray(
   const std::vector<std::size_t>& text) {
   std::vector<std::size_t> charCount(text.size());
   // A map from character to index in the text.
@@ -237,7 +237,7 @@ std::optional<SuffixArray> MaybeSuffixArray(
       charIndexes[character] = charIdx;
     } else {
       // We ran into a character multiple times. We can no longer do simple way.
-      return std::nullopt;
+      return nullopt;
     }
   }
   std::vector<std::size_t> indeces;
