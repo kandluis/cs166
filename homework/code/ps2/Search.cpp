@@ -1,7 +1,14 @@
 #include "Search.h"
 
-#include <optional>
-#include <iostream>
+#if __has_include(<optional>)
+#   include <optional>
+    using std::optional;
+    using std::nullopt;
+#else
+#   include <experimental/optional>
+    using std::experimental::optional;
+    using std::experimental::nullopt;
+#endif
 
 namespace {
 
@@ -33,15 +40,15 @@ int compare(const std::string& text, const std::size_t suffixIdx,
 }
 
 // Finds the index of the smallest suffix matching pattern.
-// [startIndex, endIndex) is a half-open interval. Returns std::nullopt
+// [startIndex, endIndex) is a half-open interval. Returns nullopt
 // if no suffixes match pattern
-std::optional<std::size_t> binarySearchSmallest(
+optional<std::size_t> binarySearchSmallest(
   const std::string& pattern,
   const std::string& text,
   const SuffixArray& suffixArr,
   const std::size_t startIndex, const std::size_t endIndex) {
   if (startIndex >= endIndex) {
-    return std::nullopt;
+    return nullopt;
   }
   const auto recurse = [&](const std::size_t start, const std::size_t end) {
     return binarySearchSmallest(pattern, text, suffixArr, start, end);
@@ -71,13 +78,13 @@ std::optional<std::size_t> binarySearchSmallest(
 }
 
 // Same as above but finds the largest matching suffix.
-std::optional<std::size_t> binarySearchLargest(
+optional<std::size_t> binarySearchLargest(
   const std::string& pattern,
   const std::string& text,
   const SuffixArray& suffixArr,
   const std::size_t startIndex, const std::size_t endIndex) {
   if (startIndex >= endIndex) {
-    return std::nullopt;
+    return nullopt;
   }
   const auto recurse = [&](const std::size_t start, const std::size_t end) {
     return binarySearchLargest(pattern, text, suffixArr, start, end);
