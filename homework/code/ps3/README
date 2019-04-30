@@ -1,0 +1,16 @@
+You can build our provided test harness by using make and then running
+
+    ./test-overlap
+    
+from the command line. This program will generate large numbers of random
+intervals, insert and remove them from your data structure, and check your data
+structure against a (very slow) reference implementation that recomputes
+overlap from scratch at each point in time.
+
+Our Makefile will, by default, build all .cpp files in this directory and link
+them into the test-overlap executable. Please only add .cpp files here if you
+actually want to build them.
+
+The test driver does not actually use the Treap type. You are free to do
+whatever you'd like with that type, though we recommend using it as a validated
+implementation of a balanced BST you can then build on for dynamic overlap.
