@@ -97,6 +97,7 @@ void DynamicOverlap::insert(int start, int end) {
    */
   while (node->parent != nullptr) {
     node->parent->maxEndpoint = std::max(node->parent->maxEndpoint, node->maxEndpoint);
+    node = node->parent;
   }
 }
 

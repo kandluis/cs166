@@ -85,7 +85,6 @@ int main() {
     }
     
     /* Validate correctness. */
-    d.printDebugInfo();
     checkAgreement(d, intervals);
     
     /* Change the intervals. Option 1: add an interval. */
