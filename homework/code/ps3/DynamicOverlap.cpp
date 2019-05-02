@@ -1,6 +1,7 @@
 #include "DynamicOverlap.h"
 
 #include <random>
+#include <iostream>
 #include <iomanip>
 
 namespace {
@@ -161,7 +162,8 @@ void DynamicOverlap::remove(int start, int end) {
   delete toRemove;
 }
 
-std::size_t DynamicOverlap::intervalsContainingRecursive(const Node* node, const int key) const {
+std::size_t DynamicOverlap::intervalsContainingRec(
+  const Node* node, const int key) const {
   // No node, so no intervals containing this point. Also if the point is larger
   // than maxEndpoint.
   if (node == nullptr || key > node->maxEndpoint) return 0;
@@ -169,11 +171,12 @@ std::size_t DynamicOverlap::intervalsContainingRecursive(const Node* node, const
   // If the point is strictly smaller then the start, any interval containing it
   // are to the left.
   if (key < node->interval.start) {
-    return intervalsContainingRecursive(node->left, key);
+    return intervalsContainingRec(node->left, key);
   }
   // At this point, all we know is that the 'key' is in [interval->start, maxEndpoint].
   // This means it maybe to the left [smaller, >key] or to the right [interval->start, maxEndpoint]
-  const std::size_t count = intervalsContainingRecursive(node->left, key) + intervalsContainingRecursive(node->right, key);
+  const std::size_t count = (intervalsContainingRec(node->left, key) +
+                             intervalsContainingRec(node->right, key));
   // We also check if our current node contains the value.
   if (node->interval.start <= key && key <= node->interval.end) {
     return count + node->count;
@@ -183,7 +186,7 @@ std::size_t DynamicOverlap::intervalsContainingRecursive(const Node* node, const
 
 /* Modified tree search to find all intervals containing this key. */
 std::size_t DynamicOverlap::intervalsContaining(int key) const {
-  return intervalsContainingRecursive(root, key);
+  return intervalsContainingRec(root, key);
 }
 
 /* Standard rotation logic. We just have to remember to adjust the root and
@@ -252,4 +255,26 @@ int DynamicOverlap::getMaxEndpoint(const Node& node) {
     max = std::max(max, node.right->maxEndpoint);
   }
   return max;
+}
+
+/* Prints debugging information. This is just to make testing a bit easier. */
+void DynamicOverlap::printDebugInfo() const {
+  printDebugInfoRec(root, 0);
+  std::cout << std::flush;
+}
+
+void DynamicOverlap::printDebugInfoRec(Node* root, unsigned indent) const {
+  if (root == nullptr) {
+    std::cout << std::setw(indent) << "" << "null" << '\n';
+  } else {
+    std::cout << std::setw(indent) << "" << "Node " << root << '\n';
+    std::cout << std::setw(indent) << "" << "Interval: (" << root->interval.start << ", " << root->interval.end << ")\n";
+    std::cout << std::setw(indent) << "" << "maxEndPoint: " << root->maxEndpoint << '\n';
+    std::cout << std::setw(indent) << "" << "count: " << root->count << '\n';
+    std::cout << std::setw(indent) << "" << "weight: " << root->weight << '\n';
+    std::cout << std::setw(indent) << "" << "Left Child:" << '\n';
+    printDebugInfoRec(root->left,  indent + 4);
+    std::cout << std::setw(indent) << "" << "Right Child:" << '\n';
+    printDebugInfoRec(root->right, indent + 4);
+  }
 }

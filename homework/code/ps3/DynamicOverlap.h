@@ -53,6 +53,12 @@ public:
    */
   std::size_t intervalsContaining(int key) const;
 
+  /**
+   * For testing and debugging purposes, prints out a representation of the
+   * treap.
+   */
+  void printDebugInfo() const;
+
 private:
   // An closed interval [start, end].
   struct Interval {
@@ -106,8 +112,8 @@ private:
 
     // Convenience constructor.
     Node(int start, int end, double weight, Node* parent)
-      : interval(start, end), maxEndpoint(end), count(1), weight(weight), parent(parent) {
-    }
+      : interval(start, end), maxEndpoint(end), count(1), weight(weight),
+        left(nullptr), right(nullptr), parent(parent) {}
   };
 
   Node* root = nullptr;
@@ -121,7 +127,9 @@ private:
   int getMaxEndpoint(const Node& node);
 
   // A recursive helper to make membership queries simpler.
-  std::size_t intervalsContainingRecursive(const Node* node, const int key) const;
+  std::size_t intervalsContainingRec(const Node* node, const int key) const;
+
+  void printDebugInfoRec(Node* root, unsigned indent) const;
 
   /* Disallow copying. */
   DynamicOverlap(const DynamicOverlap &) = delete;
