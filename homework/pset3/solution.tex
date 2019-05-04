@@ -5,6 +5,9 @@
 \usepackage{amsfonts} % For mathematical fonts (like \mathbb{E}!).
 \usepackage{upgreek}  % For upright Greek letters, such as \upvarphi.
 \usepackage{wasysym}  % For additional glyphs (like \smiley!).
+\usepackage{tikz}
+\usepackage{tkz-graph}
+\usetikzlibrary{shapes}
 % For document margins.
 \usepackage[left=.8in, right=.8in, top=1in, bottom=1in]{geometry}
 \usepackage{lastpage} % For a reference to the number of pages.
@@ -113,7 +116,83 @@ The original version of the skiplist introduced in Pugh's paper, as suggested by
 \part Briefly explain how to encode a multiway tree as a skiplist. Include illustrations as appropriate.
 
 \begin{solution}
-Your solution goes here!
+The coding is fairly straight-forward. Each level of the tree corresponds to a level in the skip-list. The 0-level (root node) can becomes the top-most linked list in the skip list. Going down the tree, the next level becomes the second-from-the-top linked list. The left-most node keys are all linked together, followed by the left-most value in the root node (which is at the same index as the corresponding skip-list node in the top list), followed by the keys in the right child of the leftmost key in the root, and so-on. Generally speaking, the previous level is repeated with the addition of the current level keys such that the children of the previous level keys are placed in the same order, but in between their corresponding parents.
+
+
+
+An illustration will likely help. Consider the following multi-way tree.
+
+
+\begin{tikzpicture}
+\tikzstyle{bplus}=[rectangle split, rectangle split horizontal,rectangle split ignore empty parts,draw]
+\tikzstyle{every node}=[bplus]
+\tikzstyle{level 1}=[sibling distance=60mm]
+\tikzstyle{level 2}=[sibling distance=15mm]
+\node {15} [->]
+  child {node {3 \nodepart{two} 7}
+    child {node {1 \nodepart{two} 2}}
+    child {node {4 \nodepart{two} 6}}
+    child {node {8 \nodepart{two} 9}}    
+  } 
+  child {node {21 \nodepart{three} 32 \nodepart{four} 50}
+    child {node {17 \nodepart{two} 20}}
+    child {node {28 \nodepart{two} 30}}    
+    child[sibling distance=25mm] {node {34 \nodepart{three} 44 \nodepart{four} 47}}    
+    child[sibling distance=25mm] {node {53}}    
+  };
+  \end{tikzpicture}
+
+The tree can be encoded as a skip-list as shown below:
+
+
+\begin{tikzpicture}
+  \SetGraphUnit{0.7}
+  \SetVertexNormal[Shape    = rectangle,MinSize=.3 cm]
+   %%%%%%%%%%%%%%%%% vertices %%%%%%%%%%%%%%%%%%% 
+   %  name of node x;y  x row y column
+
+   % bottom left
+  \Vertex[L=${}$] {0;0}
+
+  % left of skip lists.
+  \foreach \num [count=\n from 0] in  {1,2}
+  {\NO[L=${}$](0;\n){0;\num}}        
+  % No = north (initial node) {new node}  L=label 
+  % Botton list
+  \foreach \num/\label [count=\n from 0] in  
+  {1/1,2/2,3/3,4/4,5/6,6/7,7/8,8/9,9/15,10/17,11/20,12/21,13/28,14/30,15/32,16/34,17/44,18/47,19/50,20/53,21/}
+    {\EA[L=$\label$](\n;0){\num;0}}  
+
+  % Middle list.
+  \foreach \no/\label  in  {3/3,6/7,9/15,12/21,15/32,19/50} {%
+  \NO[L=$\label$](\no;0){\no;1} } 
+
+  % Top list.
+  \foreach \num [count=\n from 0] in  {1,2} {%
+    \NO[L=$15$](9;\n){9;\num}}   
+
+  % End.
+  \foreach \num [count=\n from 0] in  {1,2}{%
+     \NO[L=${}$](21;\n){21;\num}} 
+
+  %%%%%%%%%%%%%%%%% edges %%%%%%%%%%%%%%%%%%%%%%%
+  % Botton list edges.
+  \foreach \num [count=\n from 1] in  {0,...,20}  {\Edge(\num;0)(\n;0)}
+
+  % End vertical edges.
+  \foreach \num [count=\n from 1] in  {0,...,1}  
+  {\Edge(0;\num)(0;\n)  \Edge(9;\num)(9;\n)  \Edge(21;\num)(21;\n)}
+
+  % Vertical edges from 1 to 2 level.
+  \foreach \num  in  {3,6,9,12,15,19} {\Edge(\num;0)(\num;1)}   
+
+  \foreach \num [remember=\num as \lastnum (initially 0)] in  {9,21}  
+  {\Edge(\lastnum;2)(\num;2)} 
+
+  % Second from bottom.
+  \foreach \num [remember=\num as \lastnum (initially 0)] in  {3,6,9,12,15,19,21}  
+  {\Edge(\lastnum;1)(\num;1)}     
+ \end{tikzpicture}   
 \end{solution}
 
 \uplevel{To design a deterministic skiplist supporting insertions, deletions, and lookups in time $\bigo{\log n}$ each, we will enforce that the skiplist always is an isometry of a 2-3-4 tree.}
@@ -121,7 +200,10 @@ Your solution goes here!
 \part Using the structural rules for 2-3-4 trees and the isometry between multiway trees and skiplists you noted in part (i) of this problem, come up with a set of structural requirements that must hold for any skip list that happens to be the isometry of a 2-3-4 tree. To do so, go through each of the structural requirements required of a 2-3-4 tree and determine what effect they will have on the shape of a skiplist that's an isometry of a 2-3-4 tree.
 
 \begin{solution}
-Your solution goes here!
+The skiplist that's an isometry of the a 2-3-4 tree must meet the following structural requirements:
+\begin{itemize}
+  \item The list at level $i$ can must skip 1,2 or 3 nodes from level $i-1$.
+\end{itemize}
 \end{solution}
 
 \uplevel{Going forward, we'll call a skiplist that obeys the rules you came up with in part (ii) a \textbf{\emph{2-3-4 skiplist}}.}
@@ -129,13 +211,218 @@ Your solution goes here!
 \part Briefy explain why a lookup on a 2-3-4 skiplist takes worst-case $\bigo{\log n}$ time.
 
 \begin{solution}
-Your solution goes here!
+The lookup in a \textbf{\emph{2-3-4 skiplist}} is essentially a lookup into a 2-3-4 tree with $n$ nodes. The top-list is looking at the root node, with each movement down equivalent to following a child-edge in the 2-3-4 tree. We're performing a linear search within each node/segment. As such, this means worts-case running time is$\bigo{b\log n} = \bigo{\log n}$ (since $b = 2$), the same as a 2-3-4 tree.
 \end{solution}
 
 \part Based on the isometry you found in part (i) and the rules you developed in part (ii) of this problem, design a deterministic, (optionally amortized) $\bigo{\log n}$-time algorithm for inserting a new element into a 2-3-4 skiplist. Demonstrate your algorithm by showing the effect of inserting the value 8 into the skiplist given in the assignment handout.
 
 \begin{solution}
-Your solution goes here!
+\textbf{Overview}
+
+The algorithm simply takes direct advantage of the isometry. It's essentially the insertion algorithm for 2-3-4 trees, but applied to the skip list.
+
+\textbf{Algorithm}
+We make some simplifying assumption. We assume each linked list is doubly linked (so we can traverse forwards and backwards), and each duplicate node is also connected (doubly so, for simplicity). Note that these assumption don't change much about the skip-list, but make the algorithm description simpler.
+
+First, traverse the top-level list until you encounter a value greater than the element to be inserted. Backtrack one node, and move down to the lower level. Repeat the process until the lowest linked list in the skip-list is reached. Once a value greater than the element has been found, we have the location into which it should be inserted.
+
+Insert the element into the lowest linked list in its correct position. Count the number of nodes at this level (including the newly inserted one) contained within this segment (where a segment is between two nodes which have been promoted to the next level, or the start/end markers of the linked lists). If the count, excluding the boundart nodes, is $1, 2$ or $3$. We are done.
+
+Otherwise, take the third node in this segment and promote it to the next level. Repeat the process at this level (as if treating a newly inserted node), and continue to promote the third node until no segment has more than $3$ nodes (note, this may require creating a new topmost level if the top-level has $4$ nodes).
+
+\textbf{Correctness}
+Correctness follows from the correctness of skip-lists. Note that the insertion algorithm is almost identical to the randomized algorithm, except that the decision is made deterministically based on the sizes of the segments (and assuming a uniform distribution of values, this promotion occurs about $\frac{1}{4}$ of the time.) Also by the fact that the algorithm doesn't stop until all segments are size $3$ or smaller, the new skip-list is still a 2-3-4 skip-list.
+
+\textbf{Run-Time}
+
+The run-time of the algorithm can be analyzed directly. Finding the insertion point takes $\bigo{\log n}$ time, by (ii) from before. Next, note that the inserted node can be promoted at most $\bigo{\log n }$ times (since the skip-list is balanced and as such has height $\bigo{\log n}$). As such, the total run-time is $\bigo{\log n}$ as expected.
+
+\textbf{Example}
+For the example shown on the assignment, the algorithm will produce the following skip lists.
+\begin{enumerate}
+  \item 
+  \begin{center}
+  \begin{tikzpicture}
+    \SetGraphUnit{0.7}
+    \SetVertexNormal[Shape    = rectangle,MinSize=.3 cm]
+     %%%%%%%%%%%%%%%%% vertices %%%%%%%%%%%%%%%%%%% 
+     %  name of node x;y  x row y column
+
+     % bottom left
+    \Vertex[L=${}$] {0;0}
+
+    % left of skip lists.
+    \foreach \num [count=\n from 0] in  {1}
+    {\NO[L=${}$](0;\n){0;\num}}        
+    % No = north (initial node) {new node}  L=label 
+    % Botton list
+    \foreach \num/\label [count=\n from 0] in  
+    {1/1,2/3,3/5,4/7,5/9,6/11,7/13,8/15,9/17,10/19,11/}
+      {\EA[L=$\label$](\n;0){\num;0}}  
+
+    % Middle list.
+    \foreach \no/\label  in  {2/3,6/11,9/17} {%
+    \NO[L=$\label$](\no;0){\no;1} } 
+
+    % Top list.
+    \foreach \num [count=\n from 0] in  {1} {%
+      \NO[L=$3$](2;\n){2;\num}} 
+    \foreach \num [count=\n from 0] in  {1} {%
+      \NO[L=$11$](6;\n){6;\num}}  
+    \foreach \num [count=\n from 0] in  {1} {%
+      \NO[L=$17$](9;\n){9;\num}}    
+
+    % End.
+    \foreach \num [count=\n from 0] in  {1}{%
+       \NO[L=${}$](11;\n){11;\num}} 
+
+    %%%%%%%%%%%%%%%%% edges %%%%%%%%%%%%%%%%%%%%%%%
+    % Botton list edges.
+    \foreach \num [count=\n from 1] in  {0,...,10}  {\Edge(\num;0)(\n;0)}
+
+    % Vertical edges from 1 to 2 level.
+    \foreach \num  in  {0, 2,6,9, 11} {\Edge(\num;0)(\num;1)}   
+
+    % Second from bottom.
+    \foreach \num [remember=\num as \lastnum (initially 0)] in  {2,6,9,11}  
+    {\Edge(\lastnum;1)(\num;1)}     
+   \end{tikzpicture}   
+  \end{center}
+\item 
+  \begin{center}
+\begin{tikzpicture}
+  \SetGraphUnit{0.7}
+  \SetVertexNormal[Shape    = rectangle,MinSize=.3 cm]
+   %%%%%%%%%%%%%%%%% vertices %%%%%%%%%%%%%%%%%%% 
+   %  name of node x;y  x row y column
+
+   % bottom left
+  \Vertex[L=${}$] {0;0}
+
+  % left of skip lists.
+  \foreach \num [count=\n from 0] in  {1}
+  {\NO[L=${}$](0;\n){0;\num}}        
+  % No = north (initial node) {new node}  L=label 
+  % Botton list
+  \foreach \num/\label [count=\n from 0] in  
+  {1/1,2/3,3/5,4/7,5/8, 6/9,7/11,8/13,9/15,10/17,11/19,12/}
+    {\EA[L=$\label$](\n;0){\num;0}}  
+
+  % Middle list.
+  \foreach \no/\label  in  {2/3,7/11,10/17} {%
+  \NO[L=$\label$](\no;0){\no;1} } 
+
+  % End.
+  \foreach \num [count=\n from 0] in  {1}{%
+     \NO[L=${}$](12;\n){12;\num}} 
+
+  %%%%%%%%%%%%%%%%% edges %%%%%%%%%%%%%%%%%%%%%%%
+  % Botton list edges.
+  \foreach \num [count=\n from 1] in  {0,...,11}  {\Edge(\num;0)(\n;0)}
+
+  % Vertical edges from 1 to 2 level.
+  \foreach \num  in  {0, 2,7,10, 12} {\Edge(\num;0)(\num;1)}   
+
+  % Second from bottom.
+  \foreach \num [remember=\num as \lastnum (initially 0)] in  {2,7,10,12}  
+  {\Edge(\lastnum;1)(\num;1)}     
+ \end{tikzpicture}   
+\end{center}
+\item
+    \begin{center}
+\begin{tikzpicture}
+  \SetGraphUnit{0.7}
+  \SetVertexNormal[Shape    = rectangle,MinSize=.3 cm]
+   %%%%%%%%%%%%%%%%% vertices %%%%%%%%%%%%%%%%%%% 
+   %  name of node x;y  x row y column
+
+   % bottom left
+  \Vertex[L=${}$] {0;0}
+
+  % left of skip lists.
+  \foreach \num [count=\n from 0] in  {1}
+  {\NO[L=${}$](0;\n){0;\num}}        
+  % No = north (initial node) {new node}  L=label 
+  % Botton list
+  \foreach \num/\label [count=\n from 0] in  
+  {1/1,2/3,3/5,4/7,5/8, 6/9,7/11,8/13,9/15,10/17,11/19,12/}
+    {\EA[L=$\label$](\n;0){\num;0}}  
+
+  % Middle list.
+  \foreach \no/\label  in  {2/3,5/8,7/11,10/17} {%
+  \NO[L=$\label$](\no;0){\no;1} }   
+
+  % End.
+  \foreach \num [count=\n from 0] in  {1}{%
+     \NO[L=${}$](12;\n){12;\num}} 
+
+  %%%%%%%%%%%%%%%%% edges %%%%%%%%%%%%%%%%%%%%%%%
+  % Botton list edges.
+  \foreach \num [count=\n from 1] in  {0,...,11}  {\Edge(\num;0)(\n;0)}
+
+  % Vertical edges from 1 to 2 level.
+  \foreach \num  in  {0, 2,5,7,10, 12} {\Edge(\num;0)(\num;1)}   
+
+  % Second from bottom.
+  \foreach \num [remember=\num as \lastnum (initially 0)] in  {2,5,7,10,12}  
+  {\Edge(\lastnum;1)(\num;1)}     
+ \end{tikzpicture}   
+\end{center}
+
+\item \begin{center}
+\begin{tikzpicture}
+  \SetGraphUnit{0.7}
+  \SetVertexNormal[Shape    = rectangle,MinSize=.3 cm]
+   %%%%%%%%%%%%%%%%% vertices %%%%%%%%%%%%%%%%%%% 
+   %  name of node x;y  x row y column
+
+   % bottom left
+  \Vertex[L=${}$] {0;0}
+
+  % left of skip lists.
+  \foreach \num [count=\n from 0] in  {1,2}
+  {\NO[L=${}$](0;\n){0;\num}}        
+  % No = north (initial node) {new node}  L=label 
+  % Botton list
+  \foreach \num/\label [count=\n from 0] in  
+  {1/1,2/3,3/5,4/7,5/8, 6/9,7/11,8/13,9/15,10/17,11/19,12/}
+    {\EA[L=$\label$](\n;0){\num;0}}  
+
+  % Middle list.
+  \foreach \no/\label  in  {2/3,5/8,7/11,10/17} {%
+  \NO[L=$\label$](\no;0){\no;1} }   
+
+  % new top list.
+  \foreach \no/\label  in  {0/,7/11,12/} {%
+  \NO[L=$\label$](\no;1){\no;2} }   
+
+  % End.
+  \foreach \num [count=\n from 0] in  {1,2}{%
+     \NO[L=${}$](12;\n){12;\num}} 
+
+  %%%%%%%%%%%%%%%%% edges %%%%%%%%%%%%%%%%%%%%%%%
+  % Botton list edges.
+  \foreach \num [count=\n from 1] in  {0,...,11}  {\Edge(\num;0)(\n;0)}
+
+  % Vertical edges from 1 to 2 level.
+  \foreach \num  in  {0, 2,5,7,10, 12} {\Edge(\num;0)(\num;1)}   
+
+  % Vertical edges from 2 to 3 level.
+  \foreach \num  in  {0,7,12} {\Edge(\num;1)(\num;2)}  
+
+  % Second from bottom.
+  \foreach \num [remember=\num as \lastnum (initially 0)] in  {2,5,7,10,12}  
+  {\Edge(\lastnum;1)(\num;1)}     
+
+  % Top.
+  \foreach \num [remember=\num as \lastnum (initially 0)] in  {7,12}  
+  {\Edge(\lastnum;2)(\num;2)}   
+ \end{tikzpicture}   
+\end{center}
+
+\end{enumerate}
+
+
 \end{solution}
 
 \end{parts}
