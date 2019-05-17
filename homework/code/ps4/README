@@ -1,0 +1,21 @@
+Your task is to implement the SplayTree type given in SplayTree.h and
+SplayTree.cpp. You shouldn't need to edit any of the other files here, though
+you're welcome to look over them if you'd like.
+   
+To test your implementations manually, run the program ./explore and follow
+the prompts.
+
+To get some timing information and run our test harness, run ./run-tests.
+Our test harness will do some basic correctness checks on your implementation.
+These checks essentially only confirm that elements that should be present
+indeed are marked as present and that elements that aren't present get marked
+as absent. We do not, however, check that you're producing the right trees,
+which is something you'll need to do through your own testing.
+
+run-tests will then run a number of workflows on your implementation and
+measure the runtime. You'll get much cleaner information if you crank the
+optimization level up to the maximum by editing the Makefile to use -Ofast,
+disable debugging, and turn on platform-specific optimizations 
+(-march=native).
+
+Good luck, and have fun!
