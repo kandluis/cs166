@@ -1,0 +1,195 @@
+\documentclass[12pt]{exam}
+
+\usepackage[utf8]{inputenc}  % For UTF8 source encoding.
+\usepackage{amsmath}  % For displaying math equations.
+\usepackage{amsfonts} % For mathematical fonts (like \mathbb{E}!).
+\usepackage{upgreek}  % For upright Greek letters, such as \upvarphi.
+\usepackage{wasysym}  % For additional glyphs (like \smiley!).
+% For document margins.
+\usepackage[left=.8in, right=.8in, top=1in, bottom=1in]{geometry}
+\usepackage{lastpage} % For a reference to the number of pages.
+
+% TODO: Enter your name here :)
+\newcommand*{\authorname}{[Your name goes here]}
+
+\newcommand*{\psetnumber}{4}
+\newcommand*{\psetdescription}{Amortized Efficiency}
+\newcommand*{\duedate}{Tuesday, May 21st}
+\newcommand*{\duetime}{2:30 pm}
+
+% Fancy headers and footers
+\headrule
+\firstpageheader{CS166\\Spring 2019}{Problem Set \psetnumber\\\psetdescription}{Due: \duedate\\at \duetime}
+\runningheader{CS166}{Problem Set \psetnumber}{\authorname}
+\footer{}{\footnotesize{Page \thepage\ of \pageref{LastPage}}}{}
+
+% Exam questions.
+\newcommand{\Q}[1]{\question{\large{\textbf{#1}}}}
+\qformat{}  % Remove formatting from exam questions.
+
+% Useful macro commands.
+\newcommand*{\ex}{\mathbb{E}}
+\newcommand*{\bigtheta}[1]{\Theta\left( #1 \right)}
+\newcommand*{\bigo}[1]{O \left( #1 \right)}
+\newcommand*{\bigomega}[1]{\Omega \left( #1 \right)}
+\newcommand*{\prob}[1]{\text{Pr} \left[ #1 \right]}
+\newcommand*{\var}[1]{\text{Var} \left[ #1 \right]}
+
+% Custom formatting for problem parts.
+\renewcommand{\thepartno}{\roman{partno}}
+\renewcommand{\partlabel}{\thepartno.}
+
+% Framed answers.
+\newcommand{\answerbox}[1]{
+\begin{framed}
+\hspace{\fill}
+\vspace{#1}
+\end{framed}}
+
+% MZ
+\usepackage{amsthm}
+\usepackage{amssymb}
+\let\oldemptyset\emptyset
+\renewcommand{\emptyset}{\text{\O}}
+\renewcommand\qedsymbol{$\blacksquare$}
+\newenvironment{prf}{{\bfseries Proof.}}{\qedsymbol}
+\newcommand{\bi}[1]{\textit{\textbf{#1}}}
+\newcommand{\annotate}[1]{\textit{\textcolor{blue}{#1}}}
+\usepackage{stmaryrd}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.15}
+\makeatletter
+\@namedef{ver@framed.sty}{9999/12/31}
+\@namedef{opt@framed.sty}{}
+\makeatother
+\usepackage{minted}
+\usepackage{mathtools}
+\usepackage{alltt}
+
+\printanswers
+
+\setlength\answerlinelength{2in} \setlength\answerskip{0.3in}
+
+\begin{document}
+\title{CS166 Problem Set \psetnumber: \psetdescription}
+\author{\authorname}
+\date{}
+\maketitle
+\thispagestyle{headandfoot}
+
+\begin{questions}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\Q{Problem One: Stacking the Deque (3 Points)}
+
+A \textit{deque} (\bi{d}ouble-\bi{e}nded \bi{que}ue, pronounced ``deck") is a data structure that acts as a hybrid between a stack and a queue. It represents a sequence of elements and supports the following four operations:
+\begin{itemize}
+\item \textit{deque}.\texttt{add-to-front}($x$), which adds $x$ to the front of the sequence.
+\item \textit{deque}.\texttt{add-to-back}($x$), which adds $x$ to the back of the sequence.
+\item \textit{deque}.\texttt{remove-front}(), which removes and returns the front element of the sequence.
+\item \textit{deque}.\texttt{remove-back}(), which removes and returns the last element of the sequence.
+\end{itemize}
+Typically, you would implement a deque as a doubly-linked list. In functional languages like Haskell,
+Scheme, or ML, however, this implementation is not possible. In those languages, you would instead implement
+a deque using three stacks.
+
+Design a deque implemented on top of three stacks. Each operation should run in amortized time $O(1)$. For the purposes of this problem, do not use any auxiliary data structures except for these stacks.
+
+\begin{solution}
+
+\textbf{Overview: }
+
+The general idea is to use one stack to track the front of the .
+\end{solution}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+
+\Q{Problem Two: Very Dynamic Prefix Parity (4 Points)}
+
+On Problem Set Three, you designed a data structure for the \bi{dynamic prefix parity problem}. If you'll recall, this data structure supports the following operations:
+\begin{itemize}
+    \item \texttt{initialize}($n$), which creates a new data structure representing an array of $n$ bits, all initially zero. This takes time $O(n)$.
+    \item \textit{ds}.\texttt{flip}($i$), which flips the $i$th bit of the bitstring. This takes time $O(\log n / \log \log n)$.
+    \item \textit{ds}.\texttt{prefix-parity}($i$), which returns the parity of the subarray consisting of the first $i$ bits of the array. (the \textit{parity} is 0 if there are an even number of one bits and 1 if there are an odd number of 1 bits). This has the same runtime as the \texttt{flip} operation, $O(log n / log log n)$.
+\end{itemize}
+
+Now, let's consider the \bi{very dynamic prefix parity problem}. In this problem, you donâ€™t begin with a fixed array of bits, but instead start with an empty sequence. You then need to support these operations:
+\begin{itemize}
+    \item \textit{ds}.\texttt{append}($b$), which appends bit $b$ to the bitstring. 
+    \item \textit{ds}.\texttt{flip}($i$), which flips the $i$th bit of the bitstring.
+    \item \textit{ds}.\texttt{prefix-parity}($i$), which returns the parity of the subarray consisting of the first $i$ bits of the array.
+\end{itemize}
+Design a data structure for the very dynamic prefix parity problem such that all three operations run in \textit{amortized} time $O(\log n / \log \log n)$, where $n$ is the number of bits in the sequence at the time the operation is performed. 
+
+\begin{solution}
+Your solution goes here!
+\end{solution}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+
+\Q{Problem Three: Palos Altos (3 Points)}
+
+The order of a tree in a Fibonacci heap establishes a lower bound on the number of nodes in that tree (a tree of order $k$ must have at least $F_{k+2}$ nodes in it). Surprisingly, the order of a tree in a Fibonacci heap does \textit{not} provide an upper bound on how many nodes are in that tree.
+
+Prove that for any natural numbers $k$ and $m$, there's a sequence of operations that can be performed on an empty Fibonacci heap that results in the heap containing a tree of order $k$ with at least $m$ nodes.
+
+\begin{solution}
+Your solution goes here!
+\end{solution}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+
+\Q{Problem Four: Meldable Heaps with Addition (12 Points)}
+
+Meldable priority queues support the following operations:
+\begin{itemize}
+\item \texttt{new-pq()}, which constructs a new, empty priority queue;
+\item $pq$.\texttt{insert}($v$, $k$), which inserts element $v$ with key $k$;
+\item $pq$.\texttt{find-min()}, which returns an element with the least key;
+\item $pq$.\texttt{extract-min()}, which removes and returns an element with the least key; and
+\item \texttt{meld}($pq_1, pq_2)$, which destructively modifies priority queues $pq_1$ and $pq_2$ and produces a single priority
+queue containing all the elements and keys from $pq_1$ and $pq_2$.
+\end{itemize}
+
+Some graph algorithms, such as the Chu-Liu-Edmonds algorithm for finding the equivalent of a minimum spanning tree in directed graphs (an \textit{optimum branching}), also require the following operation:
+\begin{itemize}
+\item $pq$.\texttt{add-to-all}($\Delta k$), which adds $\Delta k$ to the keys of each element in the priority queue.
+\end{itemize}
+Using lazy binomial heaps as a starting point, design a data structure that supports all \texttt{new-pq, insert,
+find-min, meld}, and \texttt{add-to-all} in amortized time $O(1)$ and \texttt{extract-min} in amortized time $O(\log n)$.
+
+Some hints:
+\begin{enumerate}
+\item You may find it useful, as a warmup, to get all these operations to run in time $O(\log n)$ by starting
+with an \emph{eager} binomial heap and making appropriate modifications. You may end up using some
+of the techniques you develop in your overall structure.
+\item Try to make all operations have worst-case runtime $O(1)$ except for \texttt{extract-min}. Your implementation
+of \texttt{extract-min} will probably do a lot of work, but if you've set it up correctly the
+amortized cost will only be $O(\log n)$. This means, in particular, that you will only propagate the
+$\Delta k$'s through the data structure in \texttt{extract-min}.
+\item If you only propagate $\Delta k$'s during an \texttt{extract-min} as we suggest, you'll run into some challenges
+trying to \texttt{meld} two lazy binomial heaps with different $\Delta k$'s. To address this, we recommend that
+you change how \texttt{meld} is done to be even lazier than the lazy approach we discussed in class. You
+might find it useful to construct a separate data structure tracking the \texttt{meld}s that have been done
+and then only actually combining together the heaps during an \texttt{extract-min}.
+\item Depending on how you've set things up, to get the proper amortized time bound for \texttt{extract-min},
+you may need to define a potential function both in terms of the structure of the lazy binomial
+heaps and in terms of the auxiliary data structure hinted at by the previous point.
+\end{enumerate}
+
+As a courtesy to your TAs, please start off your writeup by giving a high-level overview of how your data
+structure works before diving into the details.
+
+\begin{solution}
+Your solution goes here!
+\end{solution}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\Q{Problem Five: Splay Trees in Practice (8 Points)}
+
+This one is all coding! Make sure to submit your code on myth.
+
+\end{questions}
+\end{document}
