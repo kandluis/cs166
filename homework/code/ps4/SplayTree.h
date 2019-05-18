@@ -67,7 +67,8 @@ private:
    */
   static Node* treeFor(std::size_t low, std::size_t high);
   
-  // TODO: Add any necessary new types or fields here.
+  /* Prints the tree rooted at the given node */
+  static std::string toString(const Node* root);
 
 
 
