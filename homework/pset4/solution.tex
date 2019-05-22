@@ -10,7 +10,7 @@
 \usepackage{lastpage} % For a reference to the number of pages.
 
 % TODO: Enter your name here :)
-\newcommand*{\authorname}{[Your name goes here]}
+\newcommand*{\authorname}{Luis Antonio Perez}
 
 \newcommand*{\psetnumber}{4}
 \newcommand*{\psetdescription}{Amortized Efficiency}
@@ -98,7 +98,41 @@ Design a deque implemented on top of three stacks. Each operation should run in 
 
 \textbf{Overview: }
 
-The general idea is to use one stack to track the front of the .
+The general idea is quite simple. We use a front stack $F$, a back stack $B$, and a temporary stack $T$. $F$ lets us add/remove from the front efficiently, and $B$ lets us add/remove from the back efficiently. $T$ is used only to help shuffle elements from $B$ to $F$ (when $F$ is empty) or vice-versa.
+
+\textbf{Operations: }
+
+We now give details for how the operations are performed. $B$, $F$ and $T$ begin empty. We assume that the $\texttt{size}$() of a stack can be computed in $\bigo{1}$. If not, note we can simply track the size explicitly by using a counter which is incremented on \texttt{push} and decremented in \texttt{pop}.
+
+\begin{itemize}
+  \item \textit{deque}.\texttt{add-to-front}($x$): Simply perform $F$.\texttt{push}$(x)$
+  \item \textit{deque}.\texttt{add-to-back}($x$): Simply perform $B$.\texttt{push}$(x)$
+  \item \textit{deque}.\texttt{remove-front}(): If $F$ is not-empty, simply return $F$.\texttt{pop}(). If $F$ is empty, \texttt{redistribute} the contents of $B$ so that half (rounded up) of the elements end-up in $F$ (in the correct order) and the other half in $B$. Now simply return $F$.\texttt{pop}().
+  \item \textit{deque}.\texttt{remove-back}(): If $B$ is not-empty, simply return $B$.\texttt{pop}(). Otherwise, \texttt{redistribute} the elements from $F$ so that half (rounded up) end up in $B$. Now return $B$.\texttt{pop}().
+\end{itemize}
+
+The operation \texttt{redistribute} can be performed relatively straight-forward. If both stacks are empty, \texttt{redistribute} is a no-op. Otherwise, let $A$ be the empty-stack and $B$ the full stack. Then pop half of the elemens (rounded down) from $B$ and push them onto $T$. Now pop the remaining elements in $B$ and push them onto $A$ until $B$ is empty. Lastly, pop the elements from $T$ and push them back onto $B$.
+
+\textbf{Correctness:}
+
+Correcness follows almost immediately. The first invariant is that $F$ contains elements in order where the front-most element is at the top with next elements near the bottom. Similarly, $B$ contains elements in order where the back-most element is at the top and the next element towards the bottom.
+
+Note that each operation maintains these invariants, including \texttt{redistribute} since the order of half of the elements is reversed when coming out of $B$ (and into $F$), and the other half reversed twice (for a no-op) when out of $B$ and then out of $T$.
+
+
+\textbf{Amortized Runtime:}
+
+The claim is that each of the above operations runs in amortized $\bigo{1}$ time. We can show this by using the \textit{potential method}. We define our potential to be $\Phi = 4| $F$.\texttt{size}() - B.\texttt{size}() |$ ($4 \times$ the height difference between the front and back stacks). We explicitly note that our potential starts at $0$, and cannot end any-lower. As such, this is a valid upper-bound for our analysis. We further note that we pick the constant $4$ for ease in our analysis, but a constant closer to $3$ should also work.
+
+We now show that each operation has $\bigo{1}$ amortized time.
+
+\begin{itemize}
+  \item \textit{deque}.\texttt{add-to-front}($x$): This has an actual work of $\bigo{1}$, with $4|\Delta \Phi| = 4$ ($+4$ if $F.\texttt{size}() \geq B.\texttt{size}()$ and $-4$ if $F.\texttt{size}() < B.\texttt{size}()$) for an amortized cost of $\bigo{1}$.
+  \item \textit{deque}.\texttt{add-to-back}($x$): Similar analysis as \texttt{add-to-front} (with the role of $F$ and $B$ switched), for amortized cost of $\bigo{1}$.
+  \item \textit{deque}.\texttt{remove-front}(): If $F.\texttt{size}() > 0$, the analysis is similar to the previous two for amortized cost of $\bigo{1}$. If $F.\texttt{size}() = 0$, a deeper analysis is required. Note that about half of the elements from $B$ are popped and pushed once (directly into $F$). The other half are popped and pushed twice (one pop and push into $T$, and one pop and push back to $B$). Finally, a final $F$.\texttt{pop}() is done. As such, the real cost is at most $(4|B| + 1)\bigtheta{1}$. As for our potential, we have $\Delta \Phi = -4(B.\texttt{size}() - (B.\texttt{size}() \mod 2))$ (the $\mod 2$ accounts for the cases when $| F.\texttt{size}() - B.\texttt{size}() | = 1$) since $B.\texttt{size}()$ is odd). Putting these two together, we have an amortized time of $\bigo{1}$ (our saved potential covers our cost).
+  \item \textit{deque}.\texttt{remove-back}(): The analysis is similar to \texttt{remove-front} (with the role of $F$ and $B$ switched), for an amortized cost of $\bigo{1}$.
+\end{itemize}
+
 \end{solution}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -110,10 +144,10 @@ On Problem Set Three, you designed a data structure for the \bi{dynamic prefix p
 \begin{itemize}
     \item \texttt{initialize}($n$), which creates a new data structure representing an array of $n$ bits, all initially zero. This takes time $O(n)$.
     \item \textit{ds}.\texttt{flip}($i$), which flips the $i$th bit of the bitstring. This takes time $O(\log n / \log \log n)$.
-    \item \textit{ds}.\texttt{prefix-parity}($i$), which returns the parity of the subarray consisting of the first $i$ bits of the array. (the \textit{parity} is 0 if there are an even number of one bits and 1 if there are an odd number of 1 bits). This has the same runtime as the \texttt{flip} operation, $O(log n / log log n)$.
+    \item \textit{ds}.\texttt{prefix-parity}($i$), which returns the parity of the subarray consisting of the first $i$ bits of the array. (the \textit{parity} is 0 if there are an even number of one bits and 1 if there are an odd number of 1 bits). This has the same runtime as the \texttt{flip} operation, $O(\log n / \log \log n)$.
 \end{itemize}
 
-Now, let's consider the \bi{very dynamic prefix parity problem}. In this problem, you donâ€™t begin with a fixed array of bits, but instead start with an empty sequence. You then need to support these operations:
+Now, let's consider the \bi{very dynamic prefix parity problem}. In this problem, you don't begin with a fixed array of bits, but instead start with an empty sequence. You then need to support these operations:
 \begin{itemize}
     \item \textit{ds}.\texttt{append}($b$), which appends bit $b$ to the bitstring. 
     \item \textit{ds}.\texttt{flip}($i$), which flips the $i$th bit of the bitstring.
@@ -122,7 +156,95 @@ Now, let's consider the \bi{very dynamic prefix parity problem}. In this problem
 Design a data structure for the very dynamic prefix parity problem such that all three operations run in \textit{amortized} time $O(\log n / \log \log n)$, where $n$ is the number of bits in the sequence at the time the operation is performed. 
 
 \begin{solution}
-Your solution goes here!
+\textbf{Overview:}
+
+The idea is to use a similar strategy as is used when appending to vectors.
+
+On each append, if don't have enough capacity, we double the capacity of our existing data structure. We do this by creating and initializing a new \textit{leaf} bitarray that has the same capacity as our existing data structure. We can immediately see that this leads to bit-arrays that are each double the size of the previous one.
+
+When \texttt{flip}ing bits, we just need to quickly located the \textit{leaf} bitarray containing the bit, and flip the corresponding bit.
+
+When computing \texttt{prefix-pairty}, we locate \textit{leaf} bitarray containing the bit, compute the corresponding prefix-parity over the array, and then efficiently compute the parity of all smaller arrays combined using a \textit{root} bitarray.
+
+\textbf{Detailed Operations and Correctness: }
+
+We now have give the details of how each operation is performed. Let each $D_k$ be the data structure we desiged to solve the \bi{dynamic prefix parity problem}. Let \textit{ds} be the new data structure we're designing to solve the \bi{very dynamic prefix parity problem}. We keep two counters: $c$ which consists of the number of bits that have been appended to \textit{ds} and $s$, which is the number of bits allocated. Both of these counters begin at $0$, and are modified only during \textit{ds}.\texttt{append}($b$).
+
+Furthermore, let \textit{leafs} be an array of pointers where the $i$-th index points to the $D_p$ for the \textit{leaf} bit-array containing the $i$-th bit, where $p$ is such that $2^p$ is the largest power of $2$ such that $2^p \leq (i+1)$. Let $D_{\text{root}}$ be the root data structure for a bit-array where the $p$-th index represents the parity of the entire bit-array corresponding to $D_p$. Note that all of these data structures start as empty.
+
+
+\begin{itemize}
+  \item \textit{ds}.\texttt{flip}($i$):
+
+  Check $i < c$ (throw an error if not). Take $D_p = \textit{leafs}[i]$ and perform $D_p$.\texttt{flip}$(i - p)$, followed by $D_{\text{root}}$.\texttt{flip}$(p)$. In English, we flip the bit in the corresponding \textit{leaf} bitarray, and also flip the parity-bit in the root bitarray corresponding to the \textit{leaf} bitarray since the parity of the \textit{leaf} bitarray as a whole has now changed. This maintains our invariants.
+
+  \item \textit{ds}.\texttt{prefix-parity}($i$):
+
+  Check $i < c$ (throw an error if not). Take $D_p = \textit{leafs}[i]$, and compute $b_p = D_p$.\texttt{prefix-parity}$(i - p)$. This is the prefix-parity of the \textit{leaf} bit-array containing $i$. To compute the complete \textit{prefix-parity}, we must compute the parity of all preceeding \textit{leaf} bit-arrays. Thankfully, we can do this directly by simply computing $b_{\text{root}} = D_{\text{root}}$.\texttt{prefix-parity}$(p-1)$ if $p > 1$, else let $b_{\text{root}} = 0$. Finally, simply return $b_p $ XOR $b_{\text{root}}$, which is the complete \texttt{prefix-parity} for $i$ and is correct given our invariants.
+  
+  \item \textit{ds}.\texttt{append}($b$):
+
+    If $c < s$, we first increment $c$. If $b == 0$, we're done. If $b == 1$, we perform \textit{ds}.\texttt{flip}$(c-1)$. 
+
+    Now for the interesting case where $c == s$ ($c > s$ cannot occur). We first increment $c$ and double $s$ (if $s == 0$, set $s$ to $1$). Then, \texttt{initialize}($\max\{1, \frac{s}{2} \}$) $D_p$, where $p$ is such that $2^p$ is the largest power of $2$ where $2^p \leq c$. We then append $\max\{1, \frac{s}{2}\}$ ($\bigo{n}$) pointers to \textit{leafs} each pointing to $D_p$. We then construct a new $D'_{\text{root}}$ by calling $D'_{\text{root}}$.\texttt{initialize}$(p + 1)$ and then repeatedly calling $D'_{\text{root}}$.\texttt{flip}$(r)$ for each bit in the \textit{root} bit-array which is $1$. If $b==0$, we are done. Otherwise, we simply call $\textit{ds}$.\texttt{flip}$(c-1)$.
+\end{itemize}
+
+\textbf{Amortized Runtime Analysis}
+
+The claim is that each of the above operations run in $\bigo{\log n / \log \log n}$ time, where $n$ is the number of bits at the time the operation is performed.
+
+We show this by using the potential methond. First, define $n' = c - 2^p$ where $2^p$ is the largest power of 2 less than or equal ot $c$. This is just counting number of \texttt{append}s which have been performed into the largest $D_p$. Then the potential for our data structure is defined as:
+
+$$
+  \Phi =
+    \begin{cases}
+      2n' & n' = 0 \\
+      2n' + c_{\texttt{initialize}}(2n' + \log 2n') + c_{\texttt{flip}} \log 2n' \log \log 2n' & n' \ in \{1,2\} \\
+      2n' + c_{\texttt{initialize}}(2n' + \log 2n') + c_{\texttt{flip}} \log 2n' \log \log 2n' / \log \log \log 2n' & n' > 2
+    \end{cases}
+$$
+
+  We start with $\Phi_0 = 0$. Also note that $\Phi$ is never negative, so our amortized run-time will be an upper-bound. Furthermore, we note that $c_{\texttt{initialize}}$ corresponds to the big-o constant associated with the $\bigo{n}$ run-time of \texttt{initialize} and similarly $c_{\texttt{flip}}$ corresponds to the big-o constant associated with the $\bigo{\log n / \log \log n}$ run-time of the non-amortized $\texttt{flip}$.
+
+We now show that each of the operations have amortized runtimes of $\bigo{\log n / \log \log n}$.
+
+\begin{itemize}
+  \item \textit{ds}.\texttt{flip}($i$):
+
+    The actual run-time is $\bigo{1}$ (lookup in \texttt{leafs}) + $\bigo{\log (n/2) / \log \log (n/2)}$ (flip of the corresponding leaf structure, which has at most $n/2$ bits) + $\bigo{\log \log n / \log \log \log n}$ (flip of the root structure, which has $\log n$ bits). This gives a total actual cost of $\bigo{\log n / \log \log n}$. We note that $\Delta \Phi = 0$, so this is also the amortized cost.
+
+  \item \textit{ds}.\texttt{prefix-parity}($i$):
+
+    The analysis is idential to $\texttt{flip}$ where we replace $\texttt{flip}$ with $\texttt{prefix-parity}$. Similary, the potential doesn't change. As such, the amortized cost is $\bigo{\log n / \log \log n}$.
+
+  \item \textit{ds}.\texttt{append}($b$):
+
+    If $c < s$ and $b == 0$, there is no actual work done and the change in potential $\Delta \Phi$ is at most $2 + 3c_{\texttt{initialize}} + c_{\texttt{flip}}$ (constant), giving an amortized run-time of $\bigo{1} = \bigo{\log n / \log \log n}$.
+
+    If $c < s$ and $b == 1$, the actual work done is a single bit-flip with amortized run-time of $\bigo{\log n / \log \log n}$. The change in potential $\Delta \Phi$ is at most $2 + 3c_{\texttt{initialize}} + c_{\texttt{flip}}$ (constant), giving a total amortized run-time of $\bigo{\log n / \log \log n}$.
+
+    In the worst-case, we must initialize a new $D_p$ which takes at most $c_{\texttt{initialize}} n * \bigo{1}$ time. We then append $n$ pointers to \textit{leafs}, taking $n * \bigo{1}$. Next, initializing the new $D_{\text{root}}$ takes $c_{\texttt{initialize}} \log n * \bigo{1}$ time, and making it consistent with the previous structure will take $ \log n c_{\texttt{flip}} \log \log n / \log \log \log n * \bigo{1}$. Finally, in the worst case, we must still call \texttt{flip} which has amortized run-time of $\bigo{\log n / \log \log n}$. 
+
+    The above gives the amount of actual work performed (in the worst case) as:
+    $$
+      [n + c_{\texttt{initialize}}(n + \log n) + c_{\texttt{flip}}\log n \log \log n / \log \log \log n] * \bigo{1} + \bigo{\log n / \log \log n}
+    $$
+
+    We must now compute $\Delta \Phi$. The easiest way to do this is to consider $\Phi_{m-1}$ (before the append) and $\Phi_{m}$ (after the append). Immediately before the append, the largest $D_p$ is completely full and has size $\frac{n}{2}$, so our potential is: 
+    $$
+      \Phi_{m-1} = n + c_{\texttt{initialize}}(n + \log n) + c_{\texttt{flip}} \log n \log \log n / \log \log \log n
+    $$
+    Once we've completed the operation, the largest $D_p$ is now completely empty except for the first element. Our new potential is therefore:
+    $$
+      \Phi_{m} = 2 + 2(c_{\texttt{initialize}} + 1)
+    $$
+    Our difference in potential is therefore $\Delta \Phi = \Phi_{m} - \Phi_{m-1}$.
+
+    We note that $-\Phi_{m-1}$ exactly cancels all of the work-performed except for the final $\texttt{flip}$. As such, our total amortized run-time is $\bigo{\log n / \log \log n}$ (plus $\Phi_m$, which we ignore since it is constant).
+\end{itemize}
+
+With the above, we have show that our data-structure has amortized run-time of $\bigo{\log n / \log \log n}$ for all the given operations.
+
 \end{solution}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -132,10 +254,22 @@ Your solution goes here!
 
 The order of a tree in a Fibonacci heap establishes a lower bound on the number of nodes in that tree (a tree of order $k$ must have at least $F_{k+2}$ nodes in it). Surprisingly, the order of a tree in a Fibonacci heap does \textit{not} provide an upper bound on how many nodes are in that tree.
 
-Prove that for any natural numbers $k$ and $m$, there's a sequence of operations that can be performed on an empty Fibonacci heap that results in the heap containing a tree of order $k$ with at least $m$ nodes.
+Prove that for any natural numbers $k > 0$ and $m$, there's a sequence of operations that can be performed on an empty Fibonacci heap that results in the heap containing a tree of order $k$ with at least $m$ nodes.
 
 \begin{solution}
-Your solution goes here!
+We first note that the problem statement is incomplete, and that we must have $m \geq F_{k+2}$. We now prove this modified statement.
+
+We show this using a similar strategy to that outlined in lecture. Take $k > 0$ and $m \geq F_{k+2}$.
+\begin{enumerate}
+  \item Find $p$ such that $m \leq 2^p$ and $k < p$ (e.g, find some power of $2$ larger than $m$ where the exponent is larger than $k$).
+  \item \texttt{enqueu} $2^{p+1} + 1$ elements into the heap. This leads to $2^{p+1} + 1$ trees of order $0$ in the heap.
+  \item Perform a single \texttt{extract-min}. This leads to a single tree of order $p+1$ containing $2^{p+1}$ nodes. In fact, this single tree is a binomial tree. This is by construction, as shown in lecture. Recall that a binomial tree of order $p+1$ is a single node whose children are binomial trees of order $0, 1, 2, \cdots, p$.
+  \item Prune aways all children of our single tree until only the $k$ children with the $k$-largest orders remain (note that we picked $p > k$, so we must always prune at least one child-tree). The pruning process for a given child tree can be done as follows. Beginning with the leaf-nodes, perform a \texttt{decrease-key} to cut the leaf from the tree and to make it the new mimimum. Then perform an \texttt{extract-min} to get rid of the single node. Repeat this until only the $k$-children with the highest orders remain.
+\end{enumerate}
+
+At the end of the above procedure, we can immediately see that we are left with a Fibonacci heap containing a single tree. This tree is, by construction, of order $k$ (it only has $k$ children, since all others were pruned away). All that is left is to show that the number of nodes in the tree is at least $m$.
+
+First, we note that the number of nodes in the tree must be greater than the number of nodes in the child with the largest order (we must have at least one child, since $k > 0$). By our procedure above, this child is actually a binomial tree of order $p$. As such, the child contains exactly $2^p \geq m$ (by construction) nodes. Therfore, our tree has at least $m$ nodes.
 \end{solution}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -183,7 +317,99 @@ As a courtesy to your TAs, please start off your writeup by giving a high-level 
 structure works before diving into the details.
 
 \begin{solution}
-Your solution goes here!
+
+\textbf{Overview}
+
+The general idea is to be lazy (lazier than binomial heaps), delaying almost all work to the \textit{pq}.\texttt{extract-min} function.
+
+To support \texttt{add-to-all} efficiently, we make some modifications. Each tree will also store a $\Delta k_{T}$ corresponding to already propoaged $\Delta k$ which should be added to keys of nodes in $T$.
+
+Additionally, to make sure we can support \texttt{meld} efficiently, we keep an auxilary data structure, $N$, to track the melds that have occurred. This data structure will be a binary tree. The root, $N_{pq}$, corresponds to the current priority queue. The children of a node $N_{pq_1}, N_{pq_2}$, correspond to two melded priority queues which resulted in $N_{pq}$. Each leaf node has a pointer to the linked-list of roots of its priority queue (intermediate nodes don't point to anything). All nodes store $\Delta k_{pq_i}$, the unpropogated amount to be added to the keys contained in the priority queue represented by the node.
+
+Each operation except $\texttt{extract-min}$ does the minimum amoung of work possible, maintaining the properties described above.
+
+Lastly, we also maintain a pointer such that each node $T$ in a priority queue $pq$ can immediately access $N_{pq}$ (and thereby access $\Delta k_{pq}$ in constant time).
+
+\textbf{Operations}
+We now present how each operation is performed in detail.
+
+\begin{itemize}
+  \item \textit{pq}.\texttt{new-pq}(): 
+
+    Simply initialize an empty doubly-linked list (for the roots, of which there are none). Create the node $N_{pq}$ and set $\Delta k_{pq} = 0$. Set its pointer to the head of the empty doubly-linked list.
+
+  \item \textit{pq}.\texttt{insert}($v,k$):
+
+    Add a new single-node tree, $T$, to the forest (append to the linked list of roots). The node contains the element $v$ with key $k' = k - \Delta k_{pq}$ and with $\Delta k_T = 0$. Make this $T$ have a pointer to $N_{pq}$. If the \textit{min} pointer is not set, set it to point to $T$. Otherwise, let $T'$ be the tree pointed to by \textit{min} and $k_{\text{min}}$ the corresponding key of the node. Then compare $k$ to $k_{\text{min}} + \Delta k_{T'} + \Delta k_{pq}$ (the min modifed by any propagated and unpropoaged changes), and update the \textit{min} pointer accordingly.
+
+  \item \textit{pq}.\texttt{find-min}():
+
+    Return the element pointed to by the \textit{min} pointer.
+
+  \item \textit{pq}.\texttt{extract-min}():
+
+    We use the \textit{min} pointer to find the tree with the minimum key, $T$. We remove this node, and add the children, $C_i$, to our heap (adding to the list of trees). As we're adding the children, we update $\Delta k_{C_i} += \Delta k_{T}$, thereby propogating the key deltas to each child to maintain our invariants.
+
+
+    Now, we compact our auxilary data-structure by propogating from parent node $N_p$ to children nodes $N_{C_1}, N_{C_2}$ the key delta such that $\Delta k_{C_i} += \Delta k_P$. Eventually we'll be left only with the leaf-nodes (all other nodes destroyed). Each leaf-node $N_L$ maps directly to one of the original priority queues which we were supposed to meld, with $\Delta k_{L}$ fully updated to reflect all calls to \texttt{add-to-all}. The only remaining task is to destroy these nodes my fully propogating the key deltas to their corresponding trees. We do this during the tree compaction stage.
+
+
+    First, create $N_{pq'}$ and set $\Delta k_{pq'} = 0$. At the end, this will be the root of our auxilary data structure.
+
+
+    For the tree-compaction stage, we follow a modified-version of the tree-compaction algorithm for binary heaps. The difference is that when fusing two trees of the same order, $T_1$ and $T_2$, we have to be a bit careful about the keys. First, we propogate $\Delta k_{pq_1}$ and $\Delta k_{pq_2}$ down to the trees themselves (eg, set $\Delta k_{T_i} += \Delta k_{pq_i}$). Once this is done, we should compare the values $(k_i + \Delta k_{T_1})$ and $(k_2 + \Delta k_{T_2})$, and select the appropriate minimum tree using these values. WLOG, let $T_1$ be the tree with the smaller node. Then we modify the pointer in $T_1$ so as to point to $N_{pq'}$ (this is to prevent double-counting, since this tree already has all the key deltas propogated).
+
+
+    Once the fusing process is complete, we are done.
+
+  \item \textit{pq}.\texttt{meld}($pq_1, pq_2$):
+
+    Let $T_{pq_i}$ be the tree pointed to by the \textit{min} pointer in $pq_i$ and $k_{pq_i}$ the corresponding key in the node for $i \in \{1,2\}$. Now compare the value $k_{pq_1} + \Delta k_{T_{pq_1}} + \Delta k_{pq_1}$ to $k_{pq_2} + \Delta k_{T_{pq_2}} + \Delta k_{pq_2}$ to determine the new minimum element (we're comparing the true value of the keys if all updates had been made to both priority queues). Set the \textit{min} pointer of our priority queue accordingly.
+
+    Take the two auxilary data structures $N_{pq_1}$ and $N_{pq_2}$ and merge them with a new parent $N_{pq}$. Set $\Delta k_{pq} = 0$. Stop. The melding will be performed in \texttt{extract-min}.
+
+  \item \textit{pq}.\texttt{add-to-all}($\Delta k$):
+
+    Simply update $\Delta k_{pq} += \Delta k$. 
+\end{itemize}
+
+\textbf{Amortized Runtime Analysis:}
+
+We claim that each operation has an amortized runtime of $\bigo{1}$ except for \texttt{extract-min}, which has an amortized run-time of $\bigo{ \log n}$. We do this using the \textit{potental method} using the potential function $\Phi$ that's equal to the total number of trees in our priority queue (even if we haven't quite finished \texttt{meld}ing them) plus the total number of nodes in our auxilary data structure. We note that $\Phi_0 = 0$, and that $\Phi$ is never negative. As such, this potential function is a valid upper-bound on our run-time.
+
+\begin{itemize}
+  \item \textit{pq}.\texttt{new-pq}():
+
+    The actual time spent in this function is $\bigo{1}$ (we just allocate a constant number of objects), with $\Delta \Phi = 1$ (we add one node to our auxilary data structure). This gives an amortized run-time of $\bigo{1}$.
+
+  \item \textit{pq}.\texttt{insert}($v,k$):
+
+    The actual time spent in this function is $\bigo{1}$ (add to a linked list and update values), with $\Delta \Phi = 1$ (we add one new tree). This gives an amortized run-time of $\bigo{1}$.
+
+  \item \textit{pq}.\texttt{find-min}():
+
+    The actual time spent is $\bigo{1}$ (follow a single pointer), with $\Delta \Phi = 0$. The amortized run-time is therefore $\bigo{1}$.
+
+  \item \textit{pq}.\texttt{add-to-all}($\Delta k$):
+
+    The actual time spent is $\bigo{1}$ (update a value), with $\Delta \Phi = 0$ to give an amortized run-time of $\bigo{1}$
+
+  \item \textit{pq}.\texttt{meld}($pq_1, pq_2$):
+
+    The actual time spent is $\bigo{1}$ (update the \textit{min}). The change in potential is $\Delta \Phi = 1$, since our auxilary data structure gains a node. However, the total number of trees remains the same, so there is no change there.
+
+  \item \textit{pq}.\texttt{extract-min}():
+
+    Removing the min takes time $\bigo{1}$ (updating a few values). Compacting the auxilary data structure is $\bigtheta{M}$, where $M$ is the number of nodes in the auxilary data structure at the time \texttt{extra-min} is called. The tree-compaction step takes $\bigo{T + \log n}$, where $T$ is the number of trees at the start. This gives the total amount of work done as $\bigtheta{M} + \bigo{T + \log n}$.
+
+    Now we focus on potential. We begin with $T$ trees and end with at most $\log n$ trees, for an overall change in the number of tress if $-T + \log n$. As far as our auxilary data structure, we begin with $M$ nodes and end with a single node, for an overall change of $-M + 1$. This gives the total potential change $\Delta \Phi = -T + \log n - M + 1$. 
+
+    This means that for a large enough multiplicative constant applied to our potential, we'll have have an amortized time of $\bigo{\log n}$, as desired.
+
+
+
+
+\end{itemize}
 \end{solution}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
