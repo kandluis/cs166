@@ -1,0 +1,17 @@
+Your task is to implement the functions defined in the five hash table types.
+
+You can test your code interactively by running the program
+
+   ./explore
+   
+and following the prompts. Once you think you have everything working,
+you can execute our automated timing suite by running
+
+   ./run-tests
+   
+from the command-line.
+
+Once you've gotten everything working, crank the optimizer up to the max by
+replacing -O0 -g in the Makefile with -Ofast -march=native and see what you
+find! Remember that you need to include a writeup of your findings as part
+of your problem set.
