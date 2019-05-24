@@ -3,6 +3,8 @@
 
 #include "Hashes.h"
 
+#include <vector>
+
 class LinearProbingHashTable {
 public:
   /**
@@ -49,9 +51,11 @@ public:
 
   
 private:
-  /* TODO: Add any data members or private helper functions that you'll need,
-   * then delete this comment.
-   */
+  // The function used for hashing keys.
+  const HashFunction hash_function_;
+
+  // Our hash function keys.
+  std::vector<int> buckets_;
   
   
   /* Fun with C++: these next two lines disable implicitly-generated copy

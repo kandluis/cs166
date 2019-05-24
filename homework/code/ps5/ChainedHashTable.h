@@ -3,6 +3,8 @@
 
 #include "Hashes.h"
 
+#include <vector>
+
 class ChainedHashTable {
 public:
   /**
@@ -44,9 +46,41 @@ public:
   void remove(int key);
   
 private:
-  /* TODO: Add any data members or private helper functions that you'll need,
-   * then delete this comment.
+  struct Node {
+    int key;
+    Node* next;
+  };
+
+  //
+  // Utilities for dealing with linked lists.
+  //
+  /**
+   * Free the entire list rooted at head.
    */
+  void freeList(Node* head);
+  
+  /*
+   * Prepend the allocated element to the list rooted at head.
+   * NULL element is a no-op.
+   * Otherwise, return the new head of the list.
+   */
+  Node* prepend(Node* head, Node* element);
+  
+  /*
+   * Checks if the linked list starting at head contains the given key
+   */
+  bool contains(const Node* head, const int key) const;
+
+  /*
+   * Removes the specified key (if it exists) from the linked list
+   * rooted at head.
+   */
+  Node* remove(Node* const head, const int key);
+
+  // Hash function used to determine bucket.
+  const HashFunction hash_function_;
+  // Actual hash table.
+  std::vector<Node*> buckets_;
   
   /* Fun with C++: these next two lines disable implicitly-generated copy
    * functions that would otherwise cause weird errors if you tried to

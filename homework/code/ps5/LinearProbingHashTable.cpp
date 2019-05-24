@@ -1,7 +1,6 @@
 #include "LinearProbingHashTable.h"
 
-LinearProbingHashTable::LinearProbingHashTable(size_t numBuckets, std::shared_ptr<HashFamily> family) {
-  // TODO: Implement this
+LinearProbingHashTable::LinearProbingHashTable(size_t numBuckets, std::shared_ptr<HashFamily> family) : hash_function_(family->get()) {
 }
 
 LinearProbingHashTable::~LinearProbingHashTable() {
