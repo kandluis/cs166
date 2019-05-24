@@ -2,6 +2,10 @@
 #define SecondChoiceHashTable_Included
 
 #include "Hashes.h"
+#include "LinkedList.h"
+
+#include <tuple>
+#include <vector>
 
 class SecondChoiceHashTable {
 public:
@@ -44,9 +48,14 @@ public:
   void remove(int key);
   
 private:
-  /* TODO: Add any data members or private helper functions that you'll need,
-   * then delete this comment.
-   */
+  // Hash function used to determine bucket.
+  const std::tuple<HashFunction, HashFunction> hash_functions_;
+  // Actual hash table.
+  struct Bucket {
+    linked_list::Node* head;
+    int count;
+  };
+  std::vector<Bucket> buckets_;
   
   /* Fun with C++: these next two lines disable implicitly-generated copy
    * functions that would otherwise cause weird errors if you tried to

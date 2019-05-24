@@ -2,6 +2,7 @@
 #define LinearProbingHashTable_Included
 
 #include "Hashes.h"
+#include "LinkedList.h"
 
 #include <vector>
 
@@ -55,8 +56,7 @@ private:
   const HashFunction hash_function_;
 
   // Our hash function keys.
-  std::vector<int> buckets_;
-  
+  std::vector<linked_list::Node*> buckets_;
   
   /* Fun with C++: these next two lines disable implicitly-generated copy
    * functions that would otherwise cause weird errors if you tried to
