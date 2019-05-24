@@ -3,6 +3,17 @@
 
 #include "Hashes.h"
 
+#if __has_include(<optional>)
+#   include <optional>
+    using std::optional;
+    using std::nullopt;
+#else
+#   include <experimental/optional>
+    using std::experimental::optional;
+    using std::experimental::nullopt;
+#endif
+#include <vector>
+
 class RobinHoodHashTable {
 public:
   /**
@@ -49,9 +60,21 @@ public:
   void remove(int key);
   
 private:
-  /* TODO: Add any data members or private helper functions that you'll need,
-   * then delete this comment.
-   */
+  int increment(int value) const;
+  std::size_t distance(std::size_t from, std::size_t to) const;
+
+  // The function used for hashing keys.
+  const HashFunction hash_function_;
+
+  // Our values are stored in a circular array.
+  struct Value {
+    // Cached hash of the given value.
+    std::size_t hash;
+    // Whether this value awas deleted.
+    bool deleted;
+    int value;
+  };
+  std::vector<std::optional<Value>> buckets_;
   
   
   /* Fun with C++: these next two lines disable implicitly-generated copy
