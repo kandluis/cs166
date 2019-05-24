@@ -87,11 +87,11 @@ void ChainedHashTable::insert(int data) {
 }
 
 bool ChainedHashTable::contains(int data) const {
-  const std::size_t hash = hash_function_(data);
+  const std::size_t hash = hash_function_(data) % buckets_.size();
   return contains(buckets_[hash], data);
 }
 
 void ChainedHashTable::remove(int data) {
-  const std::size_t hash = hash_function_(data);
+  const std::size_t hash = hash_function_(data) % buckets_.size();
   buckets_[hash] = remove(buckets_[hash], data);
 }
