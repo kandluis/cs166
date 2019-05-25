@@ -46,7 +46,7 @@ void RobinHoodHashTable::insert(int data) {
 bool RobinHoodHashTable::contains(int data) const {
   if (buckets_.empty()) return false;
   std::size_t hash = hash_function_(data) % buckets_.size();
-  int count = 0;
+  std::size_t count = 0;
   while (buckets_[hash] && count < buckets_.size()) {
     if (buckets_[hash]->value == data) return true;
     if (distance(buckets_[hash]->hash, hash) < count) return false;
@@ -65,7 +65,7 @@ bool RobinHoodHashTable::contains(int data) const {
 void RobinHoodHashTable::remove(int data) {
   if (buckets_.empty()) return;
   std::size_t hash = hash_function_(data) % buckets_.size();
-  int count = 0;
+  std::size_t count = 0;
   while (buckets_[hash] && count < buckets_.size()) {
     if (buckets_[hash]->value == data) {
       // Shift everything back by one we find a free space or a value that's
