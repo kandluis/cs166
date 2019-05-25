@@ -42,7 +42,7 @@ void CuckooHashTable::rebuild(const int data) {
   }
   // Rebuild first_table_;
   for (int hash = 0; hash < first_table_.size(); hash++) {
-    if (!first_table_[hash].has_value()) continue;
+    if (!first_table_[hash]) continue;
     const int element = first_table_[hash].value();
     // Skip if already in right position.
     if ((first_hash_function_(element) % first_table_.size()) == hash) continue;
@@ -57,11 +57,11 @@ void CuckooHashTable::rebuild(const int data) {
   }
   // Rebuild second_table_;
   for (int hash = 0; hash < second_table_.size(); hash++) {
-    if (!second_table_[hash].has_value()) continue;
+    if (!second_table_[hash]) continue;
     const int element = second_table_[hash].value();
     // Skip if already in right position.
     if ((second_hash_function_(element) % second_table_.size()) == hash) continue;
-    
+
     // Try to insert.
     second_table_[hash] = nullopt;
     const auto res = insertHelper(element);
@@ -83,7 +83,7 @@ std::pair<bool, int> CuckooHashTable::insertHelper(int data) {
   HashFunction* other_hash_function = &second_hash_function_;
   while (numDisplacements <= kMaxDisplacements) {
     const std::size_t hash = (*hash_function)(toInsert) % table->size();
-    if (!(*table)[hash].has_value()) {
+    if (!(*table)[hash]) {
       (*table)[hash] = toInsert;
       return {true, toInsert};
     }
@@ -125,13 +125,13 @@ void CuckooHashTable::insert(int data) {
 bool CuckooHashTable::contains(int data) const {
   if (!first_table_.empty()) {
     const std::size_t hash = first_hash_function_(data) % first_table_.size();
-    if (first_table_[hash].has_value() && first_table_[hash].value() == data ) {
+    if (first_table_[hash] && first_table_[hash].value() == data ) {
       return true;
     }
   }
   if (!second_table_.empty()) {
     const std::size_t hash = second_hash_function_(data) % second_table_.size();
-    if (second_table_[hash].has_value() && second_table_[hash].value() == data ) {
+    if (second_table_[hash] && second_table_[hash].value() == data ) {
       return true;
     }
   }
@@ -141,13 +141,13 @@ bool CuckooHashTable::contains(int data) const {
 void CuckooHashTable::remove(int data) {
   if (!first_table_.empty()) {
     const std::size_t hash = first_hash_function_(data) % first_table_.size();
-    if (first_table_[hash].has_value() && first_table_[hash].value() == data ) {
+    if (first_table_[hash] && first_table_[hash].value() == data ) {
       first_table_[hash] = nullopt;
     }
   }
   if (!second_table_.empty()) {
     const std::size_t hash = second_hash_function_(data) % second_table_.size();
-    if (second_table_[hash].has_value() && second_table_[hash].value() == data ) {
+    if (second_table_[hash] && second_table_[hash].value() == data ) {
       second_table_[hash] = nullopt;
     }
   }

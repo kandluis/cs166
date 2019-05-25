@@ -25,8 +25,8 @@ void RobinHoodHashTable::insert(int data) {
   std::size_t hash = hash_function_(data) % buckets_.size();
   std::size_t count = 0;
   optional<Value> toInsert = {{hash, data}};
-  while (buckets_[hash].has_value() &&
-         toInsert.has_value() && count < buckets_.size()) {
+  while (buckets_[hash] &&
+         toInsert && count < buckets_.size()) {
     if (buckets_[hash]->value == data) return;
     if (distance(buckets_[hash]->hash, hash) < distance(toInsert->hash, hash)) {
       const optional<Value> temp = std::move(toInsert);
@@ -47,7 +47,7 @@ bool RobinHoodHashTable::contains(int data) const {
   if (buckets_.empty()) return false;
   std::size_t hash = hash_function_(data) % buckets_.size();
   int count = 0;
-  while (buckets_[hash].has_value() && count < buckets_.size()) {
+  while (buckets_[hash] && count < buckets_.size()) {
     if (buckets_[hash]->value == data) return true;
     if (distance(buckets_[hash]->hash, hash) < count) return false;
     hash = increment(hash);
@@ -66,12 +66,12 @@ void RobinHoodHashTable::remove(int data) {
   if (buckets_.empty()) return;
   std::size_t hash = hash_function_(data) % buckets_.size();
   int count = 0;
-  while (buckets_[hash].has_value() && count < buckets_.size()) {
+  while (buckets_[hash] && count < buckets_.size()) {
     if (buckets_[hash]->value == data) {
       // Shift everything back by one we find a free space or a value that's
       // already at the right spot.
       std::size_t nextHash = increment(hash);
-      while (buckets_[nextHash].has_value() &&
+      while (buckets_[nextHash] &&
              buckets_[nextHash]->hash != nextHash) {
         buckets_[hash] = std::move(buckets_[nextHash]);
         hash = nextHash;

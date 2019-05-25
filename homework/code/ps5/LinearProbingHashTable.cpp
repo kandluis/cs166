@@ -23,7 +23,7 @@ void LinearProbingHashTable::insert(int data) {
   if (buckets_.empty()) return;
   std::size_t hash = hash_function_(data) % buckets_.size();
   int count = 0;
-  while (buckets_[hash].has_value() && !buckets_[hash]->deleted &&
+  while (buckets_[hash] && !buckets_[hash]->deleted &&
          count < buckets_.size()) {
     if (buckets_[hash]->value == data) return;
     hash = increment(hash);
@@ -40,7 +40,7 @@ bool LinearProbingHashTable::contains(int data) const {
   if (buckets_.empty()) return false;
   std::size_t hash = hash_function_(data) % buckets_.size();
   int count = 0;
-  while (buckets_[hash].has_value() && count < buckets_.size()) {
+  while (buckets_[hash] && count < buckets_.size()) {
     if (!buckets_[hash]->deleted && buckets_[hash]->value == data) return true;
     hash = increment(hash);
     count++;
@@ -52,7 +52,7 @@ void LinearProbingHashTable::remove(int data) {
   if (buckets_.empty()) return;
   std::size_t hash = hash_function_(data) % buckets_.size();
   int count = 0;
-  while (buckets_[hash].has_value() && count < buckets_.size()) {
+  while (buckets_[hash] && count < buckets_.size()) {
     if (!buckets_[hash]->deleted && buckets_[hash]->value == data) {
       buckets_[hash]->deleted = true;
       return;
