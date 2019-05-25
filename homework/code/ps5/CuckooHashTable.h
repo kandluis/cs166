@@ -83,7 +83,7 @@ private:
   HashFunction first_hash_function_;
   HashFunction second_hash_function_;
 
-  int num_elements_;
+  std::size_t num_elements_;
   std::vector<optional<int>> first_table_;
   std::vector<optional<int>> second_table_;
   
