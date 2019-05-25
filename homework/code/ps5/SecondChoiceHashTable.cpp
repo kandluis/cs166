@@ -21,6 +21,7 @@ SecondChoiceHashTable::~SecondChoiceHashTable() {
 }
 
 void SecondChoiceHashTable::insert(int data) {
+  if (buckets_.empty()) return;
   if (contains(data)) {
     // No-op if it already exists.
     return;
@@ -38,6 +39,7 @@ void SecondChoiceHashTable::insert(int data) {
 }
 
 bool SecondChoiceHashTable::contains(int data) const {
+  if (buckets_.empty()) return false;
   const std::size_t firstHash = std::get<0>(hash_functions_)(data) % buckets_.size();
   const std::size_t secondHash = std::get<1>(hash_functions_)(data) % buckets_.size();
   return (linked_list::contains(buckets_[firstHash].head, data) ||
@@ -45,6 +47,7 @@ bool SecondChoiceHashTable::contains(int data) const {
 }
 
 void SecondChoiceHashTable::remove(int data) {
+  if (buckets_.empty()) return;
   const std::size_t firstHash = std::get<0>(hash_functions_)(data) % buckets_.size();
   bool removed = false;
   std::tie(removed, buckets_[firstHash].head) =
