@@ -33,7 +33,7 @@ void LinearProbingHashTable::insert(int data) {
     // Should never get here. Someone tried to insert way too much data.
     return;
   }
-  buckets_[hash] = {/*value=*/data, /*deleted=*/false};
+  buckets_[hash] = {{/*value=*/data, /*deleted=*/false}};
 }
 
 bool LinearProbingHashTable::contains(int data) const {
