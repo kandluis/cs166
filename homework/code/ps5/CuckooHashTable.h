@@ -3,6 +3,15 @@
 
 #include "Hashes.h"
 
+#if __has_include(<optional>)
+#   include <optional>
+    using std::optional;
+    using std::nullopt;
+#else
+#   include <experimental/optional>
+    using std::experimental::optional;
+    using std::experimental::nullopt;
+#endif
 #include <vector>
 
 class CuckooHashTable {
@@ -61,12 +70,24 @@ class CuckooHashTable {
   void remove(int key);
   
 private:
+  // Triggers a rebuild of the existing data structure
+  // using the elements currently in the table. Since rebuilds are only
+  // triggered when one element can't find a location, this element must
+  // be passed explicitly to the function.
+  void rebuild(int data);
+
+  // Tries to insert the given value into the table.
+  // Returns a boolean specifying whether the insertion succeded
+  // and the (possibly attempted) last insertion element.
+  std::pair<bool, int> insertHelper(int data);
+
   std::shared_ptr<HashFamily> hash_family_;
   HashFunction first_hash_function_;
   HashFunction second_hash_function_;
 
-  std::vector<int> first_table_;
-  std::vector<int> second_table_;
+  int num_elements_;
+  std::vector<std::optional<int>> first_table_;
+  std::vector<std::optional<int>> second_table_;
   
   /* Fun with C++: these next two lines disable implicitly-generated copy
    * functions that would otherwise cause weird errors if you tried to
