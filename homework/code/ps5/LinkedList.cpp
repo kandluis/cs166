@@ -1,6 +1,7 @@
 #include "LinkedList.h"
 
 #include <utility>
+#include <iostream>
 
 namespace linked_list {
 
@@ -13,10 +14,8 @@ void free(Node* head) {
 }
 
 Node* prepend(Node* head, Node* element) {
-  if (head == nullptr) return element;
   if (element == nullptr) return head;
-  element->next = head->next;
-  head->next = element;
+  element->next = head;
   return element;
 }
 
@@ -44,11 +43,11 @@ std::pair<bool, Node*> remove(Node* const head, const int key) {
     // Removing the head of a list.
     if (prev == nullptr) {
       Node* newHead = toDelete->next;
-      free(toDelete);
+      delete toDelete;
       return {true, newHead};
     }
     prev->next = toDelete->next;
-    free(toDelete);
+    delete toDelete;
     return {true, head};
   }
   return {false, head};

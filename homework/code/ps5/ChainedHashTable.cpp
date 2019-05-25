@@ -30,8 +30,7 @@ void ChainedHashTable::insert(int data) {
     /*next=*/nullptr
   };
   const std::size_t hash = hash_function_(data) % buckets_.size();
-  Node* head = buckets_[hash];
-  buckets_[hash] = linked_list::prepend(head, element);
+  buckets_[hash] = linked_list::prepend(buckets_[hash], element);
 }
 
 bool ChainedHashTable::contains(int data) const {
