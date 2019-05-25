@@ -2,7 +2,7 @@ TARGET_CPPS := Explore.cpp RunTests.cpp
 CPP_FILES := $(filter-out $(TARGET_CPPS),$(wildcard *.cpp))
 OBJ_FILES := $(CPP_FILES:.cpp=.o)
 
-CPP_FLAGS = --std=c++17 -Wall -Werror -Wpedantic -O0 -g
+CPP_FLAGS = --std=c++17 -Wall -Werror -Wpedantic -Ofast -march=native -g
 
 all: explore run-tests
 
