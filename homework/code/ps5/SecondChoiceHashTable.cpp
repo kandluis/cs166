@@ -9,7 +9,7 @@ using ::linked_list::Node;
 
 SecondChoiceHashTable::SecondChoiceHashTable(
   size_t numBuckets, std::shared_ptr<HashFamily> family)
-  : hash_functions_( {family->get(), family->get()}), buckets_(numBuckets) {
+  : hash_functions_( std::make_tuple(family->get(), family->get())), buckets_(numBuckets) {
 }
 
 SecondChoiceHashTable::~SecondChoiceHashTable() {
