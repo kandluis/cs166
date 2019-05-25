@@ -44,9 +44,11 @@ void CuckooHashTable::rebuild(const int data) {
   for (int hash = 0; hash < first_table_.size(); hash++) {
     if (!first_table_[hash].has_value()) continue;
     const int element = first_table_[hash].value();
-    first_table_[hash] = std::nullopt;
     // Skip if already in right position.
     if ((first_hash_function_(element) % first_table_.size()) == hash) continue;
+
+    // Try to insert.
+    first_table_[hash] = std::nullopt;
     const auto res = insertHelper(element);
     if (!res.first) {
       // Failed to insert. Trigger another rebuild.
@@ -57,9 +59,11 @@ void CuckooHashTable::rebuild(const int data) {
   for (int hash = 0; hash < second_table_.size(); hash++) {
     if (!second_table_[hash].has_value()) continue;
     const int element = second_table_[hash].value();
-    second_table_[hash] = std::nullopt;
     // Skip if already in right position.
     if ((second_hash_function_(element) % second_table_.size()) == hash) continue;
+    
+    // Try to insert.
+    second_table_[hash] = std::nullopt;
     const auto res = insertHelper(element);
     if (!res.first) {
       // Failed to insert. Trigger another rebuild.
@@ -71,7 +75,7 @@ void CuckooHashTable::rebuild(const int data) {
 
 std::pair<bool, int> CuckooHashTable::insertHelper(int data) {
   int numDisplacements = 0;
-  const int kMaxDisplacements = 6 * ((num_elements_ > 1) ? log(num_elements_) : 6);
+  const int kMaxDisplacements = 6 * ((num_elements_ > 1) ? log(num_elements_) : 1);
   int toInsert = data;
   std::vector<std::optional<int>>* table = &first_table_;
   std::vector<std::optional<int>>* other_table = &second_table_;
@@ -107,6 +111,9 @@ std::pair<bool, int> CuckooHashTable::insertHelper(int data) {
 }
 
 void CuckooHashTable::insert(int data) {
+  if (num_elements_ >= (first_table_.size() + second_table_.size())) return;
+  // No-op if already contained here.
+  if (contains(data)) return;
   const auto res = insertHelper(data);
   num_elements_++;
   if (res.first) return;
@@ -136,7 +143,6 @@ void CuckooHashTable::remove(int data) {
     const std::size_t hash = first_hash_function_(data) % first_table_.size();
     if (first_table_[hash].has_value() && first_table_[hash].value() == data ) {
       first_table_[hash] = std::nullopt;
-      return;
     }
   }
   if (!second_table_.empty()) {
