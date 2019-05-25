@@ -1,4 +1,4 @@
-CFLAGS = -Wall -Werror -Wpedantic -std=gnu99 -O0 -g
+CFLAGS = -Wall -Werror -Wpedantic -std=gnu99 -Ofast -march=native -g
 CC = gcc
 
 OBJECTS = main.o bst.o
