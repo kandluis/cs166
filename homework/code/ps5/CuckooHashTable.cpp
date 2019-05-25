@@ -48,7 +48,7 @@ void CuckooHashTable::rebuild(const int data) {
     if ((first_hash_function_(element) % first_table_.size()) == hash) continue;
 
     // Try to insert.
-    first_table_[hash] = std::nullopt;
+    first_table_[hash] = nullopt;
     const auto res = insertHelper(element);
     if (!res.first) {
       // Failed to insert. Trigger another rebuild.
@@ -63,7 +63,7 @@ void CuckooHashTable::rebuild(const int data) {
     if ((second_hash_function_(element) % second_table_.size()) == hash) continue;
     
     // Try to insert.
-    second_table_[hash] = std::nullopt;
+    second_table_[hash] = nullopt;
     const auto res = insertHelper(element);
     if (!res.first) {
       // Failed to insert. Trigger another rebuild.
@@ -77,8 +77,8 @@ std::pair<bool, int> CuckooHashTable::insertHelper(int data) {
   int numDisplacements = 0;
   const int kMaxDisplacements = 6 * ((num_elements_ > 1) ? log(num_elements_) : 1);
   int toInsert = data;
-  std::vector<std::optional<int>>* table = &first_table_;
-  std::vector<std::optional<int>>* other_table = &second_table_;
+  std::vector<optional<int>>* table = &first_table_;
+  std::vector<optional<int>>* other_table = &second_table_;
   HashFunction* hash_function = &first_hash_function_;
   HashFunction* other_hash_function = &second_hash_function_;
   while (numDisplacements <= kMaxDisplacements) {
@@ -100,7 +100,7 @@ std::pair<bool, int> CuckooHashTable::insertHelper(int data) {
       other_hash_function = temp;
     }
     {
-      std::vector<std::optional<int>>* temp = table;
+      std::vector<optional<int>>* temp = table;
       table = other_table;
       other_table = temp;
     }
@@ -142,13 +142,13 @@ void CuckooHashTable::remove(int data) {
   if (!first_table_.empty()) {
     const std::size_t hash = first_hash_function_(data) % first_table_.size();
     if (first_table_[hash].has_value() && first_table_[hash].value() == data ) {
-      first_table_[hash] = std::nullopt;
+      first_table_[hash] = nullopt;
     }
   }
   if (!second_table_.empty()) {
     const std::size_t hash = second_hash_function_(data) % second_table_.size();
     if (second_table_[hash].has_value() && second_table_[hash].value() == data ) {
-      second_table_[hash] = std::nullopt;
+      second_table_[hash] = nullopt;
     }
   }
 }

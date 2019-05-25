@@ -6,11 +6,9 @@
 #if __has_include(<optional>)
 #   include <optional>
     using std::optional;
-    using std::nullopt;
 #else
 #   include <experimental/optional>
     using std::experimental::optional;
-    using std::experimental::nullopt;
 #endif
 #include <vector>
 
@@ -71,7 +69,7 @@ private:
     int value;
     bool deleted;
   };
-  std::vector<std::optional<Value>> buckets_;
+  std::vector<optional<Value>> buckets_;
   
   /* Fun with C++: these next two lines disable implicitly-generated copy
    * functions that would otherwise cause weird errors if you tried to

@@ -24,12 +24,12 @@ void RobinHoodHashTable::insert(int data) {
   if (buckets_.empty()) return;
   std::size_t hash = hash_function_(data) % buckets_.size();
   std::size_t count = 0;
-  std::optional<Value> toInsert = {{hash, data}};
+  optional<Value> toInsert = {{hash, data}};
   while (buckets_[hash].has_value() &&
          toInsert.has_value() && count < buckets_.size()) {
     if (buckets_[hash]->value == data) return;
     if (distance(buckets_[hash]->hash, hash) < distance(toInsert->hash, hash)) {
-      const std::optional<Value> temp = std::move(toInsert);
+      const optional<Value> temp = std::move(toInsert);
       toInsert = std::move(buckets_[hash]);
       buckets_[hash] = std::move(temp);
     }
@@ -77,7 +77,7 @@ void RobinHoodHashTable::remove(int data) {
         hash = nextHash;
         nextHash = increment(nextHash);
       }
-      buckets_[hash] = std::nullopt;
+      buckets_[hash] = nullopt;
       return;
     }
     // Value not in the table.

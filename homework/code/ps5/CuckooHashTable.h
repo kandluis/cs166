@@ -6,11 +6,9 @@
 #if __has_include(<optional>)
 #   include <optional>
     using std::optional;
-    using std::nullopt;
 #else
 #   include <experimental/optional>
     using std::experimental::optional;
-    using std::experimental::nullopt;
 #endif
 #include <vector>
 
@@ -86,8 +84,8 @@ private:
   HashFunction second_hash_function_;
 
   int num_elements_;
-  std::vector<std::optional<int>> first_table_;
-  std::vector<std::optional<int>> second_table_;
+  std::vector<optional<int>> first_table_;
+  std::vector<optional<int>> second_table_;
   
   /* Fun with C++: these next two lines disable implicitly-generated copy
    * functions that would otherwise cause weird errors if you tried to
