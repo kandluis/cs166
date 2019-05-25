@@ -41,7 +41,7 @@ void CuckooHashTable::rebuild(const int data) {
     return rebuild(res.second);
   }
   // Rebuild first_table_;
-  for (int hash = 0; hash < first_table_.size(); hash++) {
+  for (std::size_t hash = 0; hash < first_table_.size(); hash++) {
     if (!first_table_[hash]) continue;
     const int element = first_table_[hash].value();
     // Skip if already in right position.
@@ -56,7 +56,7 @@ void CuckooHashTable::rebuild(const int data) {
     }
   }
   // Rebuild second_table_;
-  for (int hash = 0; hash < second_table_.size(); hash++) {
+  for (std::size_t hash = 0; hash < second_table_.size(); hash++) {
     if (!second_table_[hash]) continue;
     const int element = second_table_[hash].value();
     // Skip if already in right position.
