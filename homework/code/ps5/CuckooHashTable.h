@@ -3,6 +3,8 @@
 
 #include "Hashes.h"
 
+#include <vector>
+
 class CuckooHashTable {
  public:
   /**
@@ -59,9 +61,12 @@ class CuckooHashTable {
   void remove(int key);
   
 private:
-  /* TODO: Add any data members or private helper functions that you'll need,
-   * then delete this comment.
-   */
+  std::shared_ptr<HashFamily> hash_family_;
+  HashFunction first_hash_function_;
+  HashFunction second_hash_function_;
+
+  std::vector<int> first_table_;
+  std::vector<int> second_table_;
   
   /* Fun with C++: these next two lines disable implicitly-generated copy
    * functions that would otherwise cause weird errors if you tried to

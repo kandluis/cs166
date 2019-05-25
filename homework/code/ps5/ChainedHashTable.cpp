@@ -20,6 +20,7 @@ ChainedHashTable::~ChainedHashTable() {
 }
 
 void ChainedHashTable::insert(int data) {
+  if (buckets_.empty()) return;
   if (contains(data)) {
     // No-op if it already exists.
     return;
@@ -34,11 +35,13 @@ void ChainedHashTable::insert(int data) {
 }
 
 bool ChainedHashTable::contains(int data) const {
+  if (buckets_.empty()) return false;
   const std::size_t hash = hash_function_(data) % buckets_.size();
   return linked_list::contains(buckets_[hash], data);
 }
 
 void ChainedHashTable::remove(int data) {
+  if (buckets_.empty()) return;
   const std::size_t hash = hash_function_(data) % buckets_.size();
   buckets_[hash] = linked_list::remove(buckets_[hash], data).second;
 }

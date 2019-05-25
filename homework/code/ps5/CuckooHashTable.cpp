@@ -6,8 +6,11 @@
  * a number of different load factors, you should not change the number of
  * buckets once the hash table has initially be created.
  */
-CuckooHashTable::CuckooHashTable(size_t numBuckets, std::shared_ptr<HashFamily> family) {
-  // TODO: Implement this
+CuckooHashTable::CuckooHashTable(
+  size_t numBuckets, std::shared_ptr<HashFamily> family)
+  : hash_family_(family),
+    first_hash_function_(family->get()),second_hash_function_(family->get()),
+    first_table_(numBuckets / 2), second_table_(numBuckets / 2 + (numBuckets % 2)) {
 }
 
 CuckooHashTable::~CuckooHashTable() {
@@ -19,7 +22,6 @@ void CuckooHashTable::insert(int data) {
 }
 
 bool CuckooHashTable::contains(int data) const {
-  // TODO: Implement this
   return false;
 }
 

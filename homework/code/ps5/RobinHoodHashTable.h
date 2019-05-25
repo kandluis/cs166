@@ -70,8 +70,6 @@ private:
   struct Value {
     // Cached hash of the given value.
     std::size_t hash;
-    // Whether this value awas deleted.
-    bool deleted;
     int value;
   };
   std::vector<std::optional<Value>> buckets_;
