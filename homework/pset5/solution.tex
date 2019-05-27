@@ -1,0 +1,372 @@
+\documentclass[12pt]{exam}
+
+\usepackage[utf8]{inputenc}  % For UTF8 source encoding.
+\usepackage{amsmath}  % For displaying math equations.
+\usepackage{amsfonts} % For mathematical fonts (like \mathbb{E}!).
+\usepackage{upgreek}  % For upright Greek letters, such as \upvarphi.
+\usepackage{wasysym}  % For additional glyphs (like \smiley!).
+\usepackage{mathrsfs} % For script text (hash families and universes).
+% For document margins.
+\usepackage[left=.8in, right=.8in, top=1in, bottom=1in]{geometry}
+\usepackage{lastpage} % For a reference to the number of pages.
+
+% TODO: Enter your name here :)
+\newcommand*{\authorname}{Luis A. Perez}
+
+\newcommand*{\psetnumber}{5}
+\newcommand*{\psetdescription}{Randomized Data Structures}
+\newcommand*{\duedate}{Tuesday, May 28th}
+\newcommand*{\duetime}{2:30 pm}
+
+% Fancy headers and footers
+\headrule
+\firstpageheader{CS166\\Spring 2019}{Problem Set \psetnumber\\\psetdescription}{Due: \duedate\\at \duetime}
+\runningheader{CS166}{Problem Set \psetnumber}{\authorname}
+\footer{}{\footnotesize{Page \thepage\ of \pageref{LastPage}}}{}
+
+% Exam questions.
+\newcommand{\Q}[1]{\question{\large{\textbf{#1}}}}
+\qformat{}  % Remove formatting from exam questions.
+
+% Useful macro commands.
+\newcommand*{\bigtheta}[1]{\Theta\left( #1 \right)}
+\newcommand*{\bigo}[1]{O \left( #1 \right)}
+\newcommand*{\bigomega}[1]{\Omega \left( #1 \right)}
+\newcommand*{\prob}[1]{\text{Pr} \left[ #1 \right]}
+\newcommand*{\ex}[1]{\text{E} \left[ #1 \right]}
+\newcommand*{\var}[1]{\text{Var} \left[ #1 \right]}
+
+\newcommand*{\norm}[1]{\left\lVert #1 \right\rVert}
+\newcommand*{\HH}{\mathscr{H}}   % Family of hash functions.
+\newcommand*{\UU}{\mathscr{U}}   % Universe.
+\newcommand*{\eps}{\varepsilon}  % Epsilon.
+
+
+% Custom formatting for problem parts.
+\renewcommand{\thepartno}{\roman{partno}}
+\renewcommand{\partlabel}{\thepartno.}
+
+% Framed answers.
+\newcommand{\answerbox}[1]{
+\begin{framed}
+\hspace{\fill}
+\vspace{#1}
+\end{framed}}
+
+\printanswers
+
+\setlength\answerlinelength{2in} \setlength\answerskip{0.3in}
+
+\begin{document}
+\title{CS166 Problem Set \psetnumber: \psetdescription}
+\author{\authorname}
+\date{}
+\maketitle
+\thispagestyle{headandfoot}
+
+\begin{questions}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\Q{Problem One: Final Details on Count Sketches (3 Points)}
+
+In our analysis of count sketches from lecture, we made the following simplification when determining the variance of our estimate:
+\[
+  \var{\sum_{j \ne i}{\mathbf{a}_j s(x_i) s(x_j) X_j}} = \sum_{j \ne i}\var{\mathbf{a}_j s(x_i) s(x_j) X_j}
+\]
+
+In general, the variance of a sum of random variables is not the same as the sum of their variances. That only works in the case where all those random variables are \textbf{\textit{pairwise uncorrelated}}, as you saw on Problem Set Zero.
+
+Prove that any two terms in the above summation are uncorrelated under the assumption that both $s$ and $h$ are drawn uniformly and independently from separate 2-independent families of hash functions.
+
+As a refresher, two random variables $X$ and $Y$ are uncorrelated if $\ex{XY} = \ex{X}\ex{Y}$.
+
+\begin{solution}
+We begin by defining the $j$-th term in the sum as:
+$$
+T_j = \mathbf{a}_j s(x_i) s(x_j) X_j
+$$
+What we wish to show is that $T_j \perp T_k$ for $j \neq q$ (distinct terms are independent). We can do this rather directly by showing that $\ex{T_jT_k} = \ex{T_j}\ex{T_j}$. We know from lecture that $\ex{T_j} = 0$ (however, for completeness, we present the proof below):
+
+\begin{align*}
+  \ex{T_j} &= \ex{\mathbf{a}_j s(x_i) s(x_j) X_j} \tag{Definition of $T_j$}  \\
+  &= \mathbf{a}_j \ex{ s(x_i) s(x_j) X_j} \tag{$\mathbf{a}_j$ is not a random variable} \\
+  &=  \mathbf{a}_j \ex{ s(x_i) s(x_j)} \ex{ X_j} \tag{indendence of $h$ and $s$} \\
+  & \mathbf{a}_j \ex{ s(x_i)}\ex{s(x_j)} \ex{ X_j} \tag{$s$ is pairwise independent, and $i \neq j$} \\
+  &= 0 \cdot 0 \cdot \mathbf{a}_j \ex{ X_j} = 0 \tag{ $\ex{s(x_i)} = 0$ since it is uniform over $\{-1,1\}$}
+\end{align*}
+
+From the above, we can conclude that $\ex{T_j}\ex{T_k} = 0$. As such, all we need to show is that $\ex{T_jT_k} = 0$. We do that below:
+
+\begin{align*}
+  \ex{T_j T_k} &= \ex{\mathbf{a}_j \mathbf{a}_k s(x_i)^2 s(x_j)s_(x_k) X_j X_k} \tag{Definition} \\
+  &= \mathbf{a}_j \mathbf{a}_k \ex{ s(x_i)^2 s(x_j)s_(x_k) X_j X_k} \tag{$\mathbf{a}_j, \mathbf{a}_k$ are not random variables} \\
+  &= \mathbf{a}_j \mathbf{a}_k \ex{ s(x_i)^2 s(x_j)s_(x_k)} \ex{ X_j X_k} \tag{independence of $h$ and $s$} \\
+  &= \mathbf{a}_j \mathbf{a}_k \ex{s(x_j)s_(x_k)} \ex{ X_j X_k} \tag{$s(x_i)^2 = 1$ since the range is $\{-1,1\}$} \\ 
+  &=  \mathbf{a}_j \mathbf{a}_k \ex{s(x_j)}\ex{s_(x_k)} \ex{ X_j X_k} \tag{$s$ is pairwise independent and $j \neq k$} \\
+  &= 0 \cdot 0 \mathbf{a}_j \mathbf{a}_k \ex{ X_j X_k}
+\end{align*}
+The above shows that $\ex{T_jT_k} = \ex{T_j}\ex{T_k}$, therefore we conclude that two distinct terms in the given summation are uncorrelated.
+\end{solution}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\Q{Problem Two: Cardinality Estimation (12 Points)}
+
+A \textbf{\emph{cardinality estimator}} is a data structure that supports the following two operations:
+\begin{itemize}
+  \item $ds.\texttt{see}(x)$, which records that the value $x$ has been seen; and
+  \item $ds.\texttt{estimate}()$, which returns an estimate of the number of \textit{\textbf{distinct}} values we've seen.
+\end{itemize}
+
+Imagine that we are given a data stream consisting of elements drawn from some universe $\UU$. Not all elements of $\UU$ will necessarily be present in the stream, and some elements of $\UU$ may appear multiple times. We'll denote the number of unique elements in the stream as $\textbf{\textit{F}}_\mathbf{0}$.
+
+Here's an initial data structure for cardinality estimation. We'll begin by choosing a hash function $h$ uniformly at random from a family of 2-independent hash functions $\HH$, where every function in $\HH$ maps $\UU$ to the open interval of real numbers $(0, 1)$.
+
+Our data structure works by hashing the elements it \texttt{see}s using $h$ and doing some internal bookkeeping to keep track of the $k$th-smallest unique hash code seen so far. The fact that we're tracking \textit{unique} hash codes is important; we'd like it to be the case that if we call $\texttt{see}(x)$ multiple times, it has the same effect as just calling $\texttt{see}(x)$ a single time. (The fancy term for this is that the \texttt{see} operation is \textbf{\emph{idempotent}}.) We'll implement $\texttt{estimate}()$ by returning the value $\hat{F} = \frac{k}{h_k}$, where $h_k$ denotes the $k$th smallest hash code seen.
+
+%%%%%%%%%%%%%%%%%%
+\begin{parts}
+\part Explain, intuitively, why $\hat{F}$ is likely to be close to the number of distinct elements.
+
+\begin{solution}
+Intuitively, we expect our distribution of \textit{unique} hash-codes to be uniform over the interval $(0,1)$. Taking this intuition further, and to clarify with an example, if we had one hash code, it's expected value would be $\frac{1}{2}$. Taking the inverse of this, we would get $2$ as the guess for the number of unique values see.
+
+Continuing with this example, if we had $2$ unique hash codes, we would expect the values to be $\frac{1}{3}, \frac{2}{3}$, with an estimate of $3$.
+
+We have hopefully developed sufficient intuition through example to now approach the general case. If we have $n$ unique hash codes, we would expect the values to be uniformly distributed such that they divide the unit interval equally. As such, we'd expect them to be located at $\frac{1}{n+1}, \frac{2}{n+1}, \cdots, \frac{n}{n+1}$. We can then see that all of our estimates will be $n+1$, which for large $n$ is approximately $n$ (eg, the number of unique hash codes).
+\end{solution}
+
+%%%%%%%%%%%%%%%%%%
+\uplevel{Let $\eps \in (0, 1)$ be some accuracy parameter that's provided to us.}
+
+\part Prove that $\prob{\hat{F} > (1+\eps) F_0} \le \frac{2}{k\eps^2}$. This shows that by tuning $k$, we can make it unlikely that we overestimate the true value of $F_0$.
+
+As a hint, use the techniques we covered in class: use indicator variables and some sort of concentration inequality. What has to happen for the estimate $\hat{F}$ to be too large? As a reminder, your hash function is only assumed to be 2-independent, so you can't assume it behaves like a truly random function and can only use the properties of 2-independent hash functions.
+
+\begin{solution}
+We follow the hint. First, we need to consider what it means for our estimate to be too large. More precisely, what exactly does it mean for the event $\hat{F} > (1+\eps) F_0$ to occur. We can immediately expand this out in-terms of the randomness involved by noting:
+
+\begin{align*}
+  \hat{F} > (1+\eps) F_0 \implies \frac{k}{h_k} > (1+\eps) F_0  \implies h_k < \frac{k}{(1+\eps)F_0}
+\end{align*}
+Given how our algorithm works, this bad event can occur only if at least $k$ distinct elements from our universe $\UU$ were hashed to a value smaller than $\frac{k}{(1+ \eps)F_0}$. To see this, suppose this does not occur. Then this means that we saw at most $k$ \textit{distinct} elements whose hash codes were smaller $\frac{k}{(1+ \eps)F_0}$, implying that the $k$-th smallest hash-code is actually greater than $\frac{k}{(1+ \eps)F_0}$.
+
+With the above insight, let use define $B_i$ be an indicator random variable correspondong to the $i$-th distinct element, $x_i$, \texttt{see}n by our data-structure. We define it as follows:
+
+\begin{align*}
+B_i &= 
+  \begin{cases}
+    1 & h(x_i) < \frac{k}{1+\eps F_0} \\
+    0  & \text{otherwise}
+  \end{cases}
+\end{align*}
+Then we can define $B = \sum_{i} B_i$, which intuitively just represents the number of distinct elements seen which hashed to a value smaller than $\frac{k}{(1+ \eps)F_0}$. We can now re-state our original problem as:
+\begin{align*}
+  \prob{\hat{F} > (1+\eps) F_0} &= \prob{h_k < \frac{k}{(1+\eps)F_0}} \\
+  &\leq \prob{B \geq k}
+\end{align*}
+We note that the above is starting to resemble some concentration inequalities. As such, we compute some propertie sof $B$. We begin by computing $\ex{B}$.
+\begin{align*}
+  \ex{B} &= \ex{\sum_{i} B_i} \\
+  &= \sum_{i} \ex{B_i} \tag{Linearlity of expectation} \\
+  &= \sum_{i} \prob{h(x_i) < \frac{k}{(1 + \eps)F_0}} \\
+  &< \sum_{i} \frac{k}{(1 + \eps)F_0} \tag{By distribution property of $h$} \\
+  &= \frac{k}{1 + \eps} \frac{\sum_{1} i}{F_0} \\
+  &= \frac{k}{1+\eps} \tag{We're summing over distinct $x_i$, so we have $\sum_i 1 = F_0$} \\
+\implies \ex{B} &< \frac{k}{1 + \eps}
+\end{align*}
+Next, we compute $\var{B}$.
+
+\begin{align*}
+  \var{B} &= \var{\sum_{i} B_i} \\
+  &= \sum_{i} \var{B_i} \tag{$B_i$ are pairwise independent due to properties of $h(x_i)$} \\
+  &= \sum_{i} \ex{B_i^2} - \ex{B_i}^2 \tag{Def. of variance} \\
+  &< \sum_{i} \ex{B_i^2} \\
+  &= \sum_{i} \ex{B_i} \tag{Properties of indicators} \\
+  &< \sum_{i} \frac{k}{(1 + \eps) F_0} \tag{See prev. results} \\
+  &= \frac{k}{1 + \eps} \tag{See prev. results}
+\end{align*}
+Using the above results and putting everything together, we now have:
+\begin{align*}
+\prob{\hat{F} > (1+\eps) F_0} &\leq \prob{B \geq k} \tag{See prev. results} \\
+&= \prob{B - \ex{B} \geq k - \ex{B}} \\
+&= \prob{B - \ex{B} \geq k(1 - \frac{1}{1 + \eps})} \\
+&= \prob{|B - \ex{B}| \geq \frac{k\eps}{1+\eps}}  \tag{Trivial upper-bound}\\ 
+&< \frac{k}{1+\eps}\frac{(1 + \eps)^2}{k^2 \eps^2} \tag{Applying Chebyshev's Inequality} \\
+&= \frac{1+\eps}{k\eps^2} \tag{Simplify} \\
+&\leq \frac{2}{ k\eps^2} \tag{$\eps < 1$}
+\end{align*}
+
+As such, we can safely conclude that:
+$$
+\prob{\hat{F} > (1+\eps) F_0}  < \frac{2}{ k\eps^2} 
+$$
+which means our estimate won't be too large, with high-probability which can be tweaked by changing $k$.
+\end{solution}
+
+
+\uplevel{Using a proof analogous to the one you did in part (ii) of this problem, we can also prove that
+\[
+  \prob{\frac{k}{h_k} < (1-\eps) F_0} \le \frac{2}{k\eps^2}. 
+\]
+
+The proof is very similar to the one you did in part (ii), so we won't ask you to write this one up. However, these two bounds collectively imply that by tuning k, you can make it fairly likely that you get an estimate within $\pm \eps F_0$ of the true value! All that's left to do now is to tune our confidence in our answer.}
+
+%%%%%%%%%%%%%%%%%%
+\part Using the above data structure as a starting point, design a cardinality estimator with tunable parameters $\eps \in (0, 1)$ and $\delta \in (0, 1)$ such that:
+\begin{itemize}
+  \item $\texttt{see}(x)$ takes time $\bigo{\log \eps^{-1} \cdot \log \delta^{-1}}$;
+  \item $\texttt{estimate}()$ takes time $\bigo{\log \delta^{-1}}$, and if we let $C$ denote the estimate returned this way, then 
+\[
+      \prob{|C - F_0| > \eps F_0} < \delta; \textrm{and}
+\]
+    \item the total space usage is $\bigtheta{\eps^{-2} \log \delta^{-1}}$.
+\end{itemize}
+
+\begin{solution}
+
+\textbf{Overview}
+
+As an overview, our data structure is actually relatively simple. We run $d = 24\ln \delta^{-1}$ indepent copies of the data structure described above, each with it's own independently randomly chosen hash function. For each of the data structures, we use $k =  \frac{12}{\eps^2}$. Each \textit{ds}.\texttt{see} leads to a call to \texttt{see} for the $d$ sub-structures. We merge the results of $\texttt{estimate}$ by simply returning the median reported value.
+
+\textbf{Data Structure Details}
+
+We begin by specifying in more detail how the \textit{small} data structure from the previous part works.
+
+
+\textit{The Small Data Structure}
+
+ The \textit{small} data structure maintains a max-heap, $H$, of the smallest $k=  \frac{12}{\eps^2}$ values seen. Duplicate inserts into the max-heap are a no-op (eg, no duplicate values allowed).
+
+
+ \begin{itemize}
+  \item On a \texttt{see}$(x)$ operation, if $|H| < k$, we insert $h(x)$ into $H$. Otherwise, we compare the root of $H$ to $h(x)$. If the value is smaller, the root is removed and the new $h(x)$ is inserted into the max-heap.
+  \item On a $\texttt{estimate}$ call, if $|H| < k$, simply return $|H|$. Otherwise, we look at the root value $h_k$ and return $\hat{F} = \frac{k}{h_k}$ as previously described.
+\end{itemize}
+
+
+\textit{The Primary Data Structure}
+
+With the above details clarified, we now design the \textit{primary} data structure, $\textit{ds}$. To begin, instantiate $d = 24\ln \delta^{-1}$ independent versions of the \textit{small} data structure described above, label them $D_i$.
+
+
+\begin{itemize}
+  \item \textit{ds}.\texttt{see}($x$): Simply perform $D_i$.\texttt{see}($x$) for all $i$ we've instantiated (there are $d$ of them).
+  \item \textit{ds}.\texttt{estimate}(): Perform $D_i$.\texttt{estimate} and obtain $d$ estimates. Compute the median value of these $d$ estimates, and return this median.
+\end{itemize}
+
+The above describes in full detail the exten of the data structure.
+
+
+\textbf{Approximate Correcness:}
+Let $C$ be the estimate produced by our data structure. We wish to show that:
+$$
+  \prob{|C - F_0| > \eps F_0} < \delta \\
+  \implies \prob{|C - F_0| \leq \eps} \geq 1 - \delta
+$$
+
+We first tbegin by discussing the correcness of the \textit{small} data structure.
+
+
+\textit{The Small Data Structure}
+
+
+We wish to show that the small data structure returns the estimate $\hat{F} = \frac{k}{h_k}$, where $h_k$ is the $k$-th smallest unique hash code. This primarily follows from the correctness of $H$, the max-heap which we maintain. By induction on the number of operations, we can see that for $|H| \geq k$, the root values is the $k$-th smallest unique hash code. As such, when $|H| \geq k$, the structure correctly return $\hat{F} = \frac{k}{h_k}$. We note that the structure return $|H|$ when $|H| < k$, which is trivially the correct cardinality.
+
+Finally, from part $ii$ above, we note that the described \textit{small} data structure provides the following probabilistic guarantee for $k =  \frac{12}{\eps^2}$
+
+\begin{align*}
+\prob{|\hat{F} - F_0| > \eps F_0} &= \prob{C < (1 - \eps)F_0} + \prob{C > (1+\eps)F_0} \tag{Definition of absolute value} \\
+&< \frac{2}{k\eps^2} + \frac{2}{k\eps^2} \tag{Results from part $ii$} \\
+&=  \frac{4}{k\eps^2} \\
+&= \frac{1}{3}
+\end{align*}
+
+\textit{THe Primary Data Structure}
+
+With the above established, we now proceed to show correcness of the \textit{primary data structure}. The \textit{primary} data structure doesn't actually perform much work, with the correcness following almost immediately from the \textit{small} data structures.
+
+The only interesting part is proving the probabilstic bounds, which we do now.
+
+For \textit{ds}.\texttt{estimate}(), we output the median of the $d = 24\ln \delta^{-1}$ smaller data structures. As such, the only way to to output an estimate $C$ such that $|C - F_0| > \eps F_0$ is if more than half of the \textit{small} data structures output an estimate that is more that $\eps F_0$ from the true value.
+
+We let $X$ be the random variable which counts the number of $\textit{small}$ data structures which output a ``bad'' answer. From the previous analysis, we know that each data structure has a failure probability of $\frac{1}{3}$. We also know that each data structure is independent, by construction. As such, we can upper-bound $X$ with a binomial variable Binom($d, \frac{1}{3}$). Note that this satisfies the requirements for applying the Chernoff bound, so we have:
+
+\begin{align*}
+  \prob{X > \frac{d}{2}} &\leq e^{\frac{-d(\frac{1}{2} - \frac{1}{3})^2}{\frac{2}{3}}} \\
+  &= e^{-\frac{d}{24}} \tag{Simplify}  \\
+  &= e^{-\ln \delta^{-1}} \tag{Substitute $d = 24 \ln \delta^{-1}$}\\
+  &= \delta
+\end{align*}
+From the above, we can see that our success probability is $1 - \delta$, as desired. Therefore, our data structure has the probabilistic guarantees we were looking for.
+
+
+\textbf{Run-time and space complexity}
+
+We now proceed to analyze the run-time and space complexity of each of our data structure.
+
+
+\begin{itemize}
+  \item \textit{ds}.\texttt{see}($x$): We must perform $\texttt{see}$ on each of $d$ sub-structures. Each operation takes time $\bigo{\log k}$ (inserting into a heap), giving a total run-time for this operation of $\bigo{d \log k} = \bigo{\log \delta^{-1} \log \eps^{-2} } = \bigo{\log \delta^{-1} \log \eps^{-1} }$
+  \item \textit{ds}.\texttt{estimate}(): We must perform $\texttt{estimate}$ on each of $d$ sub-structures. Each such operation takes $\bigo{1}$ (just getting the max out of a heap), so the total run-time is $\bigo{d} = \bigo{\log \delta^{-1}}$.
+\end{itemize}
+
+As for the space taken by the data structure, we note that we have $d$ sub-structures (with constant overhead). Each of the sub-structures stores $k$ values in its heap, for space usage of $\Theta(kd) = \Theta(\eps^{-2} \log \delta^{-1})$.
+
+This complete our analysis.
+\end{solution}
+
+\end{parts}
+
+As a reminder, $\log \eps^{-p} = \Theta(\log \eps^{-1})$ for any constant $p$.
+
+There are a number of really beautiful approaches out there for building cardinality estimators. Check out the impressive HyperLogLog estimator for an example of a totally different approach to solving this problem that's used widely in practice!
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\Q{Problem Three: Hashing IRL (10 Points)}
+
+This one is mostly, but not all, coding! In addition to the brief writeup below, make sure to submit your code on \texttt{myth}.
+
+\begin{parts}
+\part The theory predicts that linear probing and cuckoo hashing degenerate rapidly beyond a certain load factor. How accurate is that in practice?
+
+\begin{solution}
+The statement appears to be fairly accurate for linear probing. Across all tested hash functions (${2,3,5}$-Independent, Identity, Jenkins, and Tabulation), the insert and hit average times scale relatively well with load factors up to $0.9$, but degenerately extremely rapidly (taking \~5x longer) for $0.99$ load factor. The same thing occurs for the miss average time, but it appears to occur at a lower loadfactor (factors greater than $0.7$ already exhibit rapid degeneration).
+
+As for cuckoo hashing, miss and hit rates don't exhibit any degenerate behavior (as expected, these are always constant). Surprisingly, insert timings seem to exibit severely degenerate times only for the $2$-independent polynomial hash, increasing rapidly after a $0.45$ load factor. The other hash functions do increase in time (after a $0.45$ load), but do so slowly (the difference in average insert from $0.2$ load to $0.499$ is approximately $2$x).
+\end{solution}
+
+\part How does second-choice hashing compare to chained hashing across the range of load factors? Why do you think that is?
+
+\begin{solution}
+Chained-hashing is faster than second-choice hashing across the board for the range of load factors, across inserts, hits, and misses.
+
+While this appears surprising at first, it makes sense. The largest tested loadfactor is $3.0$, which really means that the expected length of the longest chain is $\Theta(\log n / \log \log n)$ nodes, compared to $\Theta(\log \log n)$ for second-choice hashing. While in theory this would give a large advantage to second-choice hashing, the values of $n$ used in the test-harness is small enough where the difference between these two values is not meaninful. Instead, the cost is primarily governed by the constant factors. As such, second-choice hashing is at a disadvantage.
+\end{solution}
+
+\part How does Robin Hood hashing compare to linear probing across the range of load factors? Why do you think that is?
+
+\begin{solution}
+We see that across the range of load-factors tested, Robin hood hashing tends to have similar performance as linear probing for inserts and hits. This makes sense, since the insert process is almost idential for both hashing techniques, with Robin hood hashing having a slightly larger constant factor (which is also reflected in our results, but only if analyzed closely, and is the most evident with the Tabulation Hash at high load-factors).
+
+However, Robin hood hashing shines when it comes to misses, especially at high load factors such as $0.9$ and $0.99$. This is almost surely due to the ability to perform early stopping when an element is not in the table. While in linear probing, a load-factors nearing $1$ lead a long scan of a large number of elements in the table, with Robin hoodo hashing, this scan can stop early (as soon as it finds an element closer to home). This is clearly evident in our timing results, since Robin hood. hashing is on average $100$ times faster than linear probing for $0.99$ load-factor.
+\end{solution}
+
+\part In theory, cuckoo hashing requires much stronger classes of hash functions than the other types of hash tables we've covered. Do you see this in practice?
+
+\begin{solution}
+Yes, we do see this in practice. Most other hashing techniques aren't affected much by the choice of hash function. However, for cuckoo hashing, it's very clear that a $2$-Independent Polynomial hash function actually leads to very poor insert performance, even for relatively low load factors (eg, $0.4, 0.45$). 
+
+However, we see that in practice, all other hash functions perform relatively well for cuckoo hashing (only $2$-independent is a problem).
+\end{solution}
+
+\part In theory, cuckoo hashing's performance rapidly degrades as the load factor approaches $\alpha = \frac{1}{2}$. Do you see that in practice?
+
+\begin{solution}
+This is true in practice only for the $2$-Independent Polynomial hash. For all others, this is not true. We see that for all good hash functions, the average insert time for a load factor of $0.499$ is around $2x$ slower than the insert for a load factor of $0.2$.
+\end{solution}
+
+\end{parts}
+
+\end{questions}
+\end{document}
