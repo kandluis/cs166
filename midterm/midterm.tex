@@ -1,0 +1,170 @@
+\documentclass[12pt]{exam}
+
+\usepackage[utf8]{inputenc}  % For UTF8 source encoding.
+\usepackage{amsmath}  % For displaying math equations.
+\usepackage{amsfonts} % For mathematical fonts (like \mathbb{E}!).
+\usepackage{upgreek}  % For upright Greek letters, such as \upvarphi.
+\usepackage{wasysym}  % For additional glyphs (like \smiley!).
+\usepackage{mathrsfs} % For script text (hash families and universes).
+% For document margins.
+\usepackage[left=.8in, right=.8in, top=1in, bottom=1in]{geometry}
+\usepackage{lastpage} % For a reference to the number of pages.
+\usepackage[table,xcdraw]{xcolor}
+
+% TODO: Enter your name here :)
+\newcommand*{\authorname}{[Your name goes here]}
+
+\newcommand*{\duedate}{Thursday, May 30th}
+\newcommand*{\duetime}{2:30 pm}
+
+% Fancy headers and footers
+\headrule
+\firstpageheader{CS166\\Spring 2019}{Midterm Exam \\ }{Due: \duedate\\at \duetime}
+\runningheader{CS166}{Midterm Exam}{\authorname}
+\footer{}{\footnotesize{Page \thepage\ of \pageref{LastPage}}}{}
+
+% Exam questions.
+\newcommand{\Q}[1]{\question{\large{\textbf{#1}}}}
+\qformat{}  % Remove formatting from exam questions.
+
+% Useful macro commands.
+\newcommand*{\bigtheta}[1]{\Theta\left( #1 \right)}
+\newcommand*{\bigo}[1]{O \left( #1 \right)}
+\newcommand*{\bigomega}[1]{\Omega \left( #1 \right)}
+\newcommand*{\prob}[1]{\text{Pr} \left[ #1 \right]}
+\newcommand*{\ex}[1]{\text{E} \left[ #1 \right]}
+\newcommand*{\var}[1]{\text{Var} \left[ #1 \right]}
+
+\newcommand*{\norm}[1]{\left\lVert #1 \right\rVert}
+\newcommand*{\HH}{\mathscr{H}}   % Family of hash functions.
+\newcommand*{\UU}{\mathscr{U}}   % Universe.
+\newcommand*{\eps}{\varepsilon}  % Epsilon.
+
+
+% Custom formatting for problem parts.
+\renewcommand{\thepartno}{\roman{partno}}
+\renewcommand{\partlabel}{\thepartno.}
+
+% Framed answers.
+\newcommand{\answerbox}[1]{
+\begin{framed}
+\hspace{\fill}
+\vspace{#1}
+\end{framed}}
+
+\printanswers
+
+\setlength\answerlinelength{2in} \setlength\answerskip{0.3in}
+
+\begin{document}
+\title{CS166 Midterm Exam}
+\author{\authorname}
+\date{}
+\maketitle
+\thispagestyle{headandfoot}
+
+\begin{questions}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\Q{Problem One: Range Minimum Queries}
+
+The \textit{\textbf{range distinct query problem}} (or \textit{\textbf{RDQ}}) is the following problem: preprocess an array $A$ to efficiently support queries of the form ``given a subarray of the array $A$, how many distinct elements are there in that subarray?'' For example, consider this array shown below:
+
+\begin{table}[h]
+\centering
+\setlength\tabcolsep{12pt}
+\begin{tabular}{c|
+>{\columncolor[HTML]{C5FFC4}}c |
+>{\columncolor[HTML]{C5FFC4}}c |
+>{\columncolor[HTML]{C5FFC4}}c |
+>{\columncolor[HTML]{C5FFC4}}c |
+>{\columncolor[HTML]{C5FFC4}}c |
+>{\columncolor[HTML]{C5FFC4}}c |
+>{\columncolor[HTML]{C5FFC4}}c |
+>{\columncolor[HTML]{C5FFC4}}c |
+>{\columncolor[HTML]{C5FFC4}}c |}
+\cline{2-10}
+\textit{Value} & \texttt{2} & \texttt{7} & \texttt{1} & \texttt{8} & \texttt{2} & \texttt{8} & \texttt{1} & \texttt{8} & \texttt{2} \\ \cline{2-10} 
+\textit{Index} & \cellcolor[HTML]{FFFFC7}\texttt{0} & \cellcolor[HTML]{FFFFC7}\texttt{1} & \cellcolor[HTML]{FFFFC7}\texttt{2} & \cellcolor[HTML]{FFFFC7}\texttt{3} & \cellcolor[HTML]{FFFFC7}\texttt{4} & \cellcolor[HTML]{FFFFC7}\texttt{5} & \cellcolor[HTML]{FFFFC7}\texttt{6} & \cellcolor[HTML]{FFFFC7}\texttt{7} & \cellcolor[HTML]{FFFFC7}\texttt{8} \\ \cline{2-10} 
+\end{tabular}
+\end{table}
+
+Here, performing an RDQ over the range $[2, 5]$ would return 3, as there are three distinct values in the range (namely, 1, 2, and 8). Performing an RDQ over the range $[5, 7]$ would return 2 because there are two distinct values in the range (1 and 8), performing an RDQ over the range $[0, 0]$ would return 1, and performing an RDQ over the range $[0, 8]$ would return 4 (with the distinct values being 1, 2, 7, and 8).
+
+Design a data structure for RDQ that has a (possibly expected) preprocessing time of $O(n)$ and a (worst-case) query time of $O(z)$, where $z$ is the number of distinct elements in the queried subarray.
+
+Some hints:
+\begin{itemize}
+    \item Tag each element with the index of the previous occurrence of that element in the overall array (or with -1 if it's the first copy of that element).
+    \item To count the number of distinct elements in a range, search for the first copy of each distinct element within that range. (You don't care about the second, third, etc. copy of each element.)
+    \item Use a divide-and-conquer strategy.
+\end{itemize}
+And, of course, given the title of this question, use RMQ to combine the three above ideas together.
+
+\begin{solution}
+Your solution goes here!
+\end{solution}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\Q{Problem Two: String Data Structures}
+
+The \textit{\textbf{label}} of a node in a suffix tree is the string formed by tracing the path from the root of the tree to that node. Prove that if the suffix tree for some nonempty string $T$ contains a node with label $w$, then the suffix tree for $T$ also contains a node with label $x$ for each suffix $x$ of $w$. (Some algorithms on suffix trees rely on this fact and associate each node in the suffix tree with a pointer to its longest suffix.)
+
+\begin{solution}
+Your solution goes here!
+\end{solution}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\Q{Problem Three: Balanced Trees}
+
+Suppose we will be performing a series of lookups in a binary search tree where the choice of which key to look up next is sampled independently from a fixed probability distribution. More specifically, let the keys in the tree be $x_1 < x_2 < \dots < x_n$ and let the probability of looking up key $x_i$ be $p_i$. You can assume that the access probabilities are all positive and that every search is for a key that is present in the tree.
+
+As a reminder, a binary search tree has the \textit{\textbf{entropy property}} if the expected cost of a lookup is $O(1 + H)$, where $H$ is the Shannon entropy of the probability distribution from which lookups are sampled. (See the lecture on splay trees for a refresher on Shannon entropy.)
+
+In lecture, we claimed that weight-balanced trees have the entropy property, assuming that each key's associated weight is its access probability. Prove this.
+
+\begin{solution}
+Your solution goes here!
+\end{solution}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\Q{Problem Four: Amortization}
+
+Suppose you have a sorted sequence of keys $x_1 < x_2 < \dots < x_n$ from which you'd like to construct a B-tree of order $b$. To do so, you could insert each key into an empty tree one at a time. If you were to do this, though, you'd find that you were doing a lot of unnecessary work traversing the tree top-down, since each search is guaranteed to terminate in the rightmost leaf. (Do you see why?) This top-down searching would mean that the runtime of inserting the keys would be $\Omega(n \log_b n)$.
+
+There's a much faster way to build a B-tree from scratch. Maintain a pointer to the rightmost leaf node in the B-tree, and annotate each node in the B-tree with the number of keys it contains. Then, insert each key, one at a time and in sorted order, using the following procedure:
+\begin{enumerate}
+    \item Place the key in the next free slot in the rightmost leaf.
+    \item If the rightmost leaf overflows, split that leaf and propagate any further splits higher up in the tree using the usual node-splitting procedure.
+\end{enumerate}
+
+Prove that the amortized cost of inserting each element this way is $O(1)$ using either the banker's method or the potential method. This shows that the cost of building a B-tree from a sorted sequence using this algorithm is $O(n),$ independent of the order of the B-tree.
+
+Although B-trees are typically stored on-disk and analyzed in terms of disk reads and writes, for the purposes of this problem please analyze this algorithm in terms of the total number of operations performed, not the number of block transfers.
+
+\begin{solution}
+Your solution goes here!
+\end{solution}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\Q{Problem Five: Randomization}
+
+You have a randomized data structure $D$ that estimates some (unknown) quantity $A$. Let's denote the estimate returned by the data structure as $\hat{D}$. Let's further suppose that $\ex{\hat{D}} = A$ (the estimator is unbiased) and also that $\var{\hat{D}} = A^2$ (the variance of the estimate is fairly high).
+
+Using $D$ as a black box, design an improved data structure that estimates $A$ with tunable accuracy and confidence parameters. Specifically, your data structure should be parameterized over two user-provided values $\varepsilon \in (0, 1)$ and $\delta \in (0, 1)$ and should satisfy the following guarantees:
+\begin{itemize}
+    \item $\prob{|\hat{B} - A| > \varepsilon A} < \delta$, where $\hat{B}$ is the estimate returned by your data structure;
+    \item the space usage is at most a factor of $O(\varepsilon^{-2} \log \delta^{-1})$ larger than the space usage for $D$; and
+    \item the runtime of every operation on your data structure is at most a factor of $O(\varepsilon^{-2} \log \delta^{-1})$ larger than the runtime cost of the corresponding operation on $D$.
+\end{itemize}
+As a hint, you can reduce the variance of an unbiased estimator by running lots of copies of that estimator in parallel and taking the average.
+
+\begin{solution}
+Your solution goes here!
+\end{solution}
+
+\end{questions}
+\end{document}
