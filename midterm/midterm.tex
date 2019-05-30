@@ -12,7 +12,7 @@
 \usepackage[table,xcdraw]{xcolor}
 
 % TODO: Enter your name here :)
-\newcommand*{\authorname}{[Your name goes here]}
+\newcommand*{\authorname}{Luis A. Perez}
 
 \newcommand*{\duedate}{Thursday, May 30th}
 \newcommand*{\duetime}{2:30 pm}
@@ -101,7 +101,59 @@ Some hints:
 And, of course, given the title of this question, use RMQ to combine the three above ideas together.
 
 \begin{solution}
-Your solution goes here!
+
+\textbf{Overview}
+We mostly follow the hints. The general idea for our data structure is to first tag our elements with the index of the previous occurrence. Let us define $prev[i]$ as this tag value. The key insight is that RDQ($i,j$) consists of all corresponding tags for $i \leq k \leq j$ such that $prev[k] < i$ (e.g, the previous occurrence of this value occurred before this range). We can then use the traditionall RMQ (modified to return the index) to perform a type of search which gives us all such $k$ (of which there are $z$). We stop the search as soon as the minimum in a range is $\geq i$, since this tells us all the values in that sub-range are duplicates and we don't need to process them further. This will give us the $\bigo{z}$ runtime for query.
+
+\textbf{Pre-Processing}
+
+We describe the pre-processing step. First, we tag each element with the index of the previous occurrence of that element in the overall array. We can do this by creating a hash table $H$, which starts empty, and a $prev$ array which is also empty. We then iterate over our input array from left to right, using the hash table to store mappings from elements to the previously seen index. We set $prev[i]$ to the previously seen index for $A[i]$ (if it is in $H$) or $-1$ if it does not. We then replace the mapping for $A[i]$ in $H$ to have the current index.
+
+As an example, our $prev$ array would look like $prev = \{ -1, -1, -1, -1, 0, 3, 2, 5, 4 \}$ for the figure given in our problem statement.
+
+
+We then construct the Fischer-Heun RMQ data-structure from lecture on the now fully constructed $prev$ array. Note that this data structure will be modified such that RMQ$_{prev}(i,j)$ returns the \textit{index} of the left-most occurrences of the minimum, rather than the value itself. This modification does not affect the analysis we carried out in lecture of RMQ. This completes our pre-processing.
+
+
+\textbf{Query}
+
+Let us now describe how to answer the query RDQ($i,j$). We first store $l = i$. and then issue the query $k = \text{RMQ}_{prev}(i,j)$. If $k \geq l$, we end the process for this subrange. Otherwise, we increment our distinct count by $1$, and repeat this process on the subranges $[i, k  - 1]$ and $[k+1, j]$ (if non-empty), again comparing the returned index to $l$ and either stopping or again splitting the range further.
+
+At the end of this process, we return the count variable we've maintained, which essentially consists of the number of RMQ queries we issued which returned a value $k < l$.
+
+
+\textbf{Proof of Correctness}
+
+The correctness of this algorithm relies on two key facts. We proof these seperately.
+
+\textit{Fact 1}
+The number of distinct elements in $A[i \cdots j]$ is equal to the number of elements in $prev[i \cdots j]$ such that $prev[i] < j$.
+
+The proof of this fact is rather straight-forward. We can see that by construction, $prev[k]$ corresponds to the index of the previous occurrence in our array of $A[k]$, or $-1$ if it is the first occurrence. As such, the cases where $prev[k] < i$ correspond to the \textit{first} occurrence of the element contained in $A[k]$ in our subarray (since it implies the previous occurrence was before the start of our range). Since this counts only the first-occurrence of each distinct element, the count is equal to the number of distinct elements.
+
+
+\textit{Fact 2}
+Our RMQ loop decribed above finds (and counts) all $k$ such that $prev[k] < i$. 
+
+The proof is also rather straight forward. We show both direction. Suppose we have a $k$ such that $prev[k] < i$. Then $prev[k]$ is the minimum of some subrange of $[i,j]$. Since the process only stops when when a subrange's minimum is $\geq l$, then we will eventually perform an RMQ such that the returned index is $k$. At this point, we will count $k$, and the ignore it in all future RMQs. As such, it is counted exactly once. For the other direction, suppose that we count some $k$ returned from our RMQ loop. Then this $k$ (by definition of RMQ), must be the minimum value in some subrange of $[i,j]$ and it must be the case that $prev[k] < i$.
+
+
+Combining the two facts above, we have that our data structure returns the number of distinct elements in $A[i \cdots j]$.
+
+
+
+\textbf{Pre-Processing Runtime Complexity}
+The tagging of elements is done in expected $\bigo{n}$ time, since inserting into the hash table is expected $\bigo{1}$ and setting each index of $prev$ is $\bigo{1}$ ($\bigo{n}$ to construct the array once). We do this for the $n$ elements in our input. Constructing the Fischer-Heun RMQ structure takes $\bigo{n}$ pre-processing time, since it is constructed over the $prev$ array which has $n$ elements.
+
+As such, the total pre-processing time is expected $\bigo{n}$.
+
+
+\textbf{Query Runtime Complexity}
+This is a bit more interesting. From Fact 2, we know that the RMQ loop is executed at most $3z$ times, where $z$ is the number of uniques. This is because each successful execution of RMQ captures a single distinct element (by Fact 2), but can spawn $2$ RMQs each of which might be unsuccessful. As such, the number of RMQs executed is $\bigo{z}$. Keeping the counter and returning it is $\bigo{1}$. As such, the total run-time of a single query is $\bigo{z}$, where $z$ is the number of distinct elements in the queried subarray.
+
+
+The above completes our data structure, with the desired runtimes.
+
 \end{solution}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -111,7 +163,25 @@ Your solution goes here!
 The \textit{\textbf{label}} of a node in a suffix tree is the string formed by tracing the path from the root of the tree to that node. Prove that if the suffix tree for some nonempty string $T$ contains a node with label $w$, then the suffix tree for $T$ also contains a node with label $x$ for each suffix $x$ of $w$. (Some algorithms on suffix trees rely on this fact and associate each node in the suffix tree with a pointer to its longest suffix.)
 
 \begin{solution}
-Your solution goes here!
+We wish to prove that if the suffix tree for some non-empty string $T$ contains a node with label $w$, then the suffix tree for $T$ also contains a node with label $x$ for each suffix $x$ of $w$.
+
+
+First, we recall the definition of a \textit{branching word}. A \textit{branching word} in $T$ is a string $S$ where there are characters $a \neq b$ such that $Sa$ and $Sb$ are substrings of $T$. Next, we recall the following theorem from class:
+
+\textbf{Theorem 1}
+
+The suffix tree for a string $T$ has an internal node for a string $S$ if and only if $S$ is a branching word in $T$.
+
+The above is sufficient for our proof.
+
+We know that $w$ is the \textit{\textbf{label}} of a node of the suffix tree for $T$. If $|w| = 1$ (the label is one character), there are no suffixes, and our claim is vacuously true. If we have $w = a\$$ (e.g, $w$ is a suffix of $T$), then our claim also holds almost immediately, since any suffix $x$ of $w$ will be a suffix of $T$, and as such a leaf-node of the suffix tree will be \textit{\textbf{label}}ed with $x$.
+
+As such, we consider the more interesting case where $|w| > 1$ and $w$ does not end with $\$$. This immediately implies that $w$ must be the label ending at an internal node of the suffix tree for $T$. As such, by Theorem 1, $w$ must be a branching word of $T$. By the definition of branching word, this implies that there exists $a \neq b$ such that $wa$ and $wb$ are both substrings of $T\$$. Now, consider any suffix $x$ of $w$. Note that $xa$ and $xb$ are substrings of $T$, making $x$ a \textit{branching word}. By another application of Theorem 1, we have there exists an internal node for the string $x$, since $x$ is a branching word.
+
+
+This concludes our proof, showing that the tree for $T$ also contains a node with label $x$ for each suffix $x$ of $w$.
+
+
 \end{solution}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -125,7 +195,73 @@ As a reminder, a binary search tree has the \textit{\textbf{entropy property}} i
 In lecture, we claimed that weight-balanced trees have the entropy property, assuming that each key's associated weight is its access probability. Prove this.
 
 \begin{solution}
-Your solution goes here!
+The intuition here is that, essentially, the weighed balance tree will tend to place items with higher access probability closer to the root of the tree, since this will be the only way to maintain a difference in weights which is small. This will lead precisely to the \textit{\textbf{entropy property}} of the tree.
+
+
+We first recall that the expected cost of a lookup can be defined as 
+$$
+  1 + \sum_{i=1}^n p_i c(x_i)
+$$
+where $c(x_i)$ is simply the cost of accessing element $x_i$ in the tree from the root. We note that the cost of accessing an element is proportional to the number of edges followed when performing the access, with the cost to access the root being 0, its children 1, and so on until the leaves cost $\lg n$ operations to access (for a BST).
+
+
+First, we recall results we achieved in Problem Set 2 related to weighed-balanced trees. We re-state it here. Note that since $p_i > 0$, all of our results still apply.
+
+
+\textbf{Claim 1}
+Let $w(T)$ be the total weight in a weight-balanced tree $T$. Then for $\eps = \frac{2}{3}$, the left and right substrees each must have weight at most $\eps W$. More formally, $w(T_r), w(T_l) \leq \eps w(T)$. We note that intuitively, this means weights of the subtrees along any path decrease geometrically.
+
+
+\textbf{Proof of Claim 1}
+This was done as part of Problem Set 2, so we do not re-state. Please refer to the solution there.
+
+
+\textbf{Claim 2}
+Let $S$ be a sub-tree of $T$ whose weight is such that $w(S) > \eps^k w(T)$. Then $S$ must be rooted at layer $k$ or above (with $k = 0$ corresponding to the layer containing the root node of $T$).
+
+
+\textbf{Proof of Claim 2}
+The proof can be done by induction on $k$. For $k = 0$, the claim is vacuously true (no such sub-tree exists). Consider $k = 1$. Then $S$ is a sub-tree such that $w(S) > \eps w(T)$. By Claim 1, this sub-tree must in fact be $T$, since this is the only tree whose weight is strictly greater than $\eps W(T)$, and as such, our claim holds true.
+
+Now, assume the claim holds for sub-trees whose weight is such that $w(S) > \eps^k w(T)$. We will show that it holds for trees of smaller weight. In particular, for all trees whose weight is such that $w(S) > \eps^{k+1} w(T)$. Let $p(S)$ be the tree whose root's left or right child is $S$. We first show that $w(p(S)) > \eps^k w(T)$.
+
+\begin{align*}
+  w(S) &\leq \eps w(p(S)) \tag{Claim 1 results} \\
+  \implies w(p(S)) &\geq \frac{1}{\eps} w(S) \tag{Divide by $\eps$} \\
+  &> \frac{1}{\eps} \eps^{k+1}w(T) = \eps^k w(T) \tag{ Definition of $S$} 
+\end{align*}
+As such, with the above, we have show that $w(p(S)) > \eps^k w(T)$. By the inductive hypothesis, this means that $p(S)$ must be rooted at layer $k$ or above. As such, the direct child of $p(S)$ (e.g, $S$), must be rooted at layer $k+1$ or above, concluding the proof for Claim 2.
+
+
+\textbf{Claim 3}
+
+We now make the following claim: In a weighed-balance tree, $T$, where the element weights are their access probabilities, an element with access probability $p_i$ is located in layer $\lg \frac{1}{p_i}$ or higher (closer to the root).
+
+
+\textbf{Proof of Claim 3}
+First, we note that $w(T) = 1$ (probabilities must sum to 1). Next, let us consider the subtree, $S$, rooted at the node whose weight/access probability is $p_i$. It is trivially true that $w(S) \geq p_i$. Taking $k = -\lg p_i \geq 0$ (since $p_i \in (0,1)$, we note that:
+\begin{align*}
+  \eps^{k} w(T) &= \eps^k \tag{$w(T) = 1$} \\
+  &= \eps^{-\lg p_i} \tag{$k = -\lg p_i $} \\
+  &= 2^{-\lg \eps \lg p_i} \tag{$\eps = 2^{\lg \eps}$} \\
+  &< 2^{\lg p_i} = p_i \tag{Note that $-\lg \eps \leq -\lg \frac{2}{3} < 1$ since $\eps \in (\frac{2}{3}, 1)$}
+\end{align*}
+We can therefore conclude that $w(S) \geq p_i > \eps^{k} w(T)$, for our $T$ and chosen value of $k = -\lg p_i$. It follows then from Claim 2 that the subtree $S$ must be rooted at layer $k = \lg \frac{1}{p_i}$ or above. Since the root of $S$ is the node with access probability $p_i$, we have that the element with access probability $p_i$ is located in layer $\lg \frac{1}{p_i}$ or higher.
+
+
+\textbf{Claim 4}
+
+The expected cost of a lookup in a weighed-balance tree $T$ whose element weights are their access probabilities $p_i$ with $p_i > 0$ is $\bigo{1 + H}$ where $H = \sum_{i=1}^n -p_i \lg p_i$ (the shannon entropy).
+
+
+\textbf{Proof of Claim 4}
+
+As previously discussed, the cost of the lookups will be given by $1 + \sum_{i=1}^n p_i c(x_i)$ where $c(x_i)$ is the number of edges traversed when accessing $x_i$. From the results of Claim 3, we can upper-bound $c(x_i) \leq \lg \frac{1}{p_i}$, since we've shown that element $x_i$ must be at level $\lg \frac{1}{p_i}$ or above. As such, an upper bound on the expected cost is:
+$$
+  1 + \sum_{i=1}^n p_i c(x_i) \leq 1 + \sum_{i=1}^n -p_i \lg p_i = 1 + H
+$$
+As such, the expected cost of a lookup in this weighed balance tree is $\bigo{1 + H}$, which means they have the \textbf{entropy property}, as desired.
+
 \end{solution}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -145,7 +281,25 @@ Prove that the amortized cost of inserting each element this way is $O(1)$ using
 Although B-trees are typically stored on-disk and analyzed in terms of disk reads and writes, for the purposes of this problem please analyze this algorithm in terms of the total number of operations performed, not the number of block transfers.
 
 \begin{solution}
-Your solution goes here!
+We show that the run-time of the above algorith is amortized $\bigo{1}$. We do this using the potential method, by defining the potential $\Phi$ as the number of nodes in our tree containing $2b$ keys (e.g, the nodes have been maxed out). We note that we-re using the definition of b-trees where each node has $[b, 2b]$ keys, and where the minimum number of keys is $1 \implies b \geq 1$. 
+
+We note that an empty tree has $\Phi = 0$, and that the potential is never negative, so our total change in potential can only be positive, giving us an upper-bound on the run-time.
+
+There are two cases to consider.
+
+\begin{itemize}
+  \item If the rightmost leaf node has a free slot, we simply place the key directly there. This requires that we (1) follow a pointer to the right-most leaf node, (2) check the count, (3) increment the count, and (4) place the key into the free slot.
+
+  As such the actual run-time in this case is $\bigo{1}$, with $\Delta \Phi = \bigo{1}$ (since our right-most leaf node might now contain $2b$ keys).
+
+  \item Now for the more interesting case. In this case, our rightmost leaf node has overflown. As such, we must split the leaf and propogate any further splits up the tree. Note that this once again requires (1) following a pointer to the right-most leaf-node, (2) checking the count, (3) splitting the leaf node into two, (4) modifiying the counts, (5) placing the key into the free slot, and (6) propagating the split upwards.
+
+  Steps (1)-(5) are all constant time operations, for an actual run-time of $\bigo{1}$. Now, propogating the split upwards will lead to a similar sequence of operations possibly being performed since we're again inserting a new key into a node. Let $k$ be the number of nodes which require a split. This means that the actual run-time is $\Theta(k)$ (each split is constant-time, and we must perform $k$ of them).
+
+  Now, looking at the potential, we note that $\Delta \Phi = -k$. We've stated above that $b \geq 1$, and that the nodes we split are node with $2b$ keys ($+1$ for the key we're trying to insert). As such, after the split, we're left with two nodes each of size $b$, and since $b \geq 1$, we have that $b \leq 2b$. This means that our potential decreases by $1$ per-split we perform. As such, we have an amortized run-time of $\bigo{1}$.
+\end{itemize}
+
+As such, the total number of operations performed while building the a B-tree from a sorted sequence is amortized $\bigo{n}$, since each insert takes $\bigo{1}$  amortized time.
 \end{solution}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -163,7 +317,88 @@ Using $D$ as a black box, design an improved data structure that estimates $A$ w
 As a hint, you can reduce the variance of an unbiased estimator by running lots of copies of that estimator in parallel and taking the average.
 
 \begin{solution}
-Your solution goes here!
+
+\textbf{Overview}: 
+The hint essentially gives it away. We can use the average estimate to reduce our variance (by a constant factor), and then the median of the average to achieve the final bounds.
+
+The way we do this is by creating $d = 24 \ln \delta^{-1}$ groups each containing $w = 3 \eps^{-2}$ copies of our $D$ data structure. Label each data structure as $D_{ij}$, meaning it belongs to group $i$ and is copy $j$ within that group.
+
+We then run all copies in parallel. Let $\hat{D}_{ij}$ be the estimate for our unknown quantity $A$ returned by $D_{ij}$. Then our data structure will simply return $\hat{B} =\text{median}_{i=1}^d \{ D_i = \frac{1}{w} \sum_{j=1}^{w} \hat{D}_{ij} \}$ as its estimate (the median of averages). It is important that the randomness for each of our $dw$ copies is independent. More formally, if we treat $\hat{D}_{ij}$ as a random variable, we have that $\hat{D}_{ij} \perp \hat{D}_{lm}$ for all $i \neq l, j \neq m$.
+
+We also assume that $\ex{\hat{D_{ij}}} = A$ is a finite value. As for $\var{\hat{D_{ij}}} = A^2$, we assume that it is non-zero. If it is $0$, then that means that a single data structure $D$ is a perfect-estimator for $A$, so it trivially satisfies all of the specified requirements and as such is not interesting (just run this single, perfect estimator).
+
+
+\textbf{Details of the Data Structure}
+For any operation which is not returning the estimate, simply copy and forward any arguments to each of $D_{ij}$'s corresponding operation.
+
+For the estimate operation, obtain an estimate $\hat{D}_{ij}$ from each $D_{ij}$. Take the average over each group $i$, and then take the median of the results and return this as the estimate $\hat{B}$.
+
+
+\textbf{Proof of Approximate Correcness Most of the Time}
+
+We wish to show that the data structure designed above will have the following guarantee:
+
+$$
+  \prob{|\hat{B} - A| > \eps A} < \delta
+$$
+
+Intuitively, this means that we will fail (provide an answer outside $\eps$ percent the true value) less than $\delta$ of the time. In other words, we'll be close to our true answer (as specifed by $\eps$) ($1 - \delta$) percent of the time.
+
+
+First, we note that we can treat $\hat{D}_{ij}$ as a random variable from some distribution, and that $\hat{D}_{ij} \perp \hat{D}_{lm}$ for $i \neq l, j \neq m$ since each data structure has its own independent source of randomness. From the problem statement, we have that $\ex{\hat{D}_{ij}} = A$ (unbiased estimator with finite expectation) and that $\var{\hat{D}_{ij}} = A^2 > 0$. Let is now consider each of our groups. We have $\hat{D}_i = \frac{1}{w} \sum_{j=1}^w \hat{D}_{ij}$, which is just the average of $w$ identically distributed independent variables (by our assumptions stated previously). As such, we have:
+
+\begin{align*}
+  \ex{\hat{D}_i} &= \ex{\frac{1}{w} \sum_{j=1}^w \hat{D}_{ij}} \tag{Definition} \\
+  &= \frac{1}{w} \sum_{j=1}^w \ex{\hat{D}_{ij}} \tag{Linearity of Expectation} \\
+  &= \frac{1}{d} \sum_{j=1}^w A \tag{Previous results} \\
+  &= A
+\end{align*}
+
+and we also have:
+
+\begin{align*}
+  \var{\hat{D}_i} &= \var{\frac{1}{w} \sum_{j=1}^w \hat{D}_{ij}} \tag{Definition} \\
+  &= \frac{1}{w^2}\var{\sum_{j=1}^w \hat{D}_{ij}} \tag{$\var{aX} = a^2\var{X}$} \\
+  &= \frac{1}{w^2} \sum_{j=1}^w \var{\hat{D}_{ij}} \tag{$D_ij \perp D_ik$ for $k \neq j$} \\
+  &= \frac{1}{w^2} \sum_{j=1}^w A^2 \tag{Previous results} \\
+  &= \frac{A^2}{w}
+\end{align*}
+
+As we can see, $\hat{D}_i$ is still an unbiased estimator, and the more copies we run, the more we can decrease our variance. In fact, we note that by our assumptions, for $w \geq 0$, we have that $\ex{\hat{D}_i}$ is finite and that $\var{\hat{D}_i} > 0$. We can therefore apply Chebyshev's inequality, with $k = \sqrt{3}$, to have:
+\begin{align*}
+  \prob{|\hat{D}_i - A| > k \frac{A}{\sqrt{w}}} < \frac{1}{k^2} \tag{For any $k > 0$} \\
+  \prob{|\hat{D}_i - A| > \sqrt{3} \frac{A}{\sqrt{w}}} < \frac{1}{3} \tag{Using $k = \sqrt{3}$} \\
+  \prob{|\hat{D}_i - A| > \eps A} < \frac{1}{3} \tag{Using $w = 3\eps^{-2}$}
+\end{align*}
+
+As such, the estimator $\hat{D}_i$ from each group will be within a factor of $\eps$ with some non-zero probability (for our specific case, we've chosen at least $\frac{2}{3}$).
+
+With the above, we can now consider our final estimate $\hat{B}$, which is simply the median of all of the $d = 24 \ln \delta^{-1}$ group estimates. Let us analyze this final estimate.
+
+
+We let $X$ be the random variable which counts the number of $\hat{D}_i$ which are ``bad'' (eg, $|\hat{D}_i - A| > \eps A$). From the previous analysis, we know that each data structure has a failure probability of at most $\frac{1}{3}$. We also know that each data structure is independent, by construction. As such, we can upper-bound $X$ with a binomial variable Binom($d, \frac{1}{3}$). Note that this satisfies the requirements for applying the Chernoff bound, so we have:
+
+\begin{align*}
+  \prob{X > \frac{d}{2}} &< e^{\frac{-d(\frac{1}{2} - \frac{1}{3})^2}{\frac{2}{3}}} \\
+  &= e^{-\frac{d}{24}} \tag{Simplify}  \\
+  &= e^{-\ln \delta^{-1}} \tag{Substitute $d = 24 \ln \delta^{-1}$}\\
+  &= \delta
+\end{align*}
+As such, we can now safely conclude that:
+$$
+  \prob{|\hat{B} - A| > \eps A} \leq \prob{X > \frac{d}{2}} < \delta
+$$
+which is what we desired.
+
+
+\textbf{Space Usage and Run-time Analysis}
+
+Let the space usage of a single $D$ be $\bigo{s}$, and the runtime for operation $i$ (including estimate) be $\bigo{r_i}$. The the total space usage of our data structure above is $\bigo{wd} \cdot \bigo{s} = \bigo{\eps^{-2} \log \delta^{-1}} \cdot \bigo{s}$, as required.
+
+Similarly, let us consider the run-time for any operation $i$ on our data structure which is not \texttt{estimate}. We simply call the corresponding operation on each of the $wd$ copies, so the total run-time is $\bigo{wd} \cdot \bigo{r_i} = \bigo{\eps^{-2} \log \delta^{-1}} \cdot \bigo{r_i}$.
+
+As for our estimate call, the analysis is similar to all other operations. Additionally, we must average across $wd$ values, and them compute the median of $d$ values. All of this can be done in linear time in the size of the input (average is obvious, computing the median can be done using quickselect or median of medians algorithm if we don't want randomization to take place), so the total run-time is still $\bigo{wd} \cdot \bigo{r_e} = \bigo{\eps^{-2} \log \delta^{-1}} \cdot \bigo{r_e}$ where $\bigo{r_e}$ is the run-time to return the estimate in $D$.
+
 \end{solution}
 
 \end{questions}
